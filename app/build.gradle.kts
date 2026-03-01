@@ -90,4 +90,9 @@ dependencies {
 
     // Debug
     debugImplementation(libs.compose.ui.preview)
+
+    // Unit tests
+    testImplementation(libs.junit)
+    testImplementation(libs.mockk)
+    testImplementation(libs.kotlinx.coroutines.test)
 }
