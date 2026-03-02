@@ -42,6 +42,10 @@ class HistoryViewModel @Inject constructor(private val uploadDao: UploadDao) : V
     fun onSearchChange(query: String)         = _uiState.update { it.copy(searchQuery = query) }
     fun clearSearch()                         = _uiState.update { it.copy(searchQuery = "") }
 
+    fun clearAll() {
+        viewModelScope.launch { uploadDao.deleteAll() }
+    }
+
     fun cleanupSuccessful() {
         viewModelScope.launch {
             val thirtyDaysAgo = System.currentTimeMillis() - (30L * 24 * 60 * 60 * 1000)

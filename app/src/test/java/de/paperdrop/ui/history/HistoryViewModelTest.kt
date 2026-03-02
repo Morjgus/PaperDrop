@@ -153,6 +153,16 @@ class HistoryViewModelTest {
     }
 
     @Test
+    fun `clearAll deletes all entries`() = runTest {
+        coEvery { uploadDao.deleteAll() } just Runs
+
+        viewModel.clearAll()
+        advanceUntilIdle()
+
+        coVerify { uploadDao.deleteAll() }
+    }
+
+    @Test
     fun `cleanupSuccessful calls dao with thirty-day cutoff`() = runTest {
         coEvery { uploadDao.cleanupOlderThan(any()) } just Runs
         val before = System.currentTimeMillis() - (30L * 24 * 60 * 60 * 1000)

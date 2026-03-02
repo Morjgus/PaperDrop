@@ -37,9 +37,9 @@ fun HistoryScreen(viewModel: HistoryViewModel = hiltViewModel()) {
         AlertDialog(
             onDismissRequest = { showCleanupDialog = false },
             icon    = { Icon(Icons.Default.DeleteSweep, null) },
-            title   = { Text("Verlauf bereinigen") },
-            text    = { Text("Erfolgreiche Uploads älter als 30 Tage werden entfernt. Dokumente in Paperless bleiben erhalten.") },
-            confirmButton = { TextButton(onClick = { viewModel.cleanupSuccessful(); showCleanupDialog = false }) { Text("Bereinigen") } },
+            title   = { Text("Verlauf löschen") },
+            text    = { Text("Alle Einträge werden aus dem Verlauf entfernt. Dokumente in Paperless bleiben erhalten.") },
+            confirmButton = { TextButton(onClick = { viewModel.clearAll(); showCleanupDialog = false }) { Text("Löschen") } },
             dismissButton = { TextButton(onClick = { showCleanupDialog = false }) { Text("Abbrechen") } }
         )
     }

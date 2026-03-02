@@ -40,6 +40,9 @@ interface UploadDao {
 
     @Query("DELETE FROM uploads WHERE timestamp < :before AND status = 'SUCCESS'")
     suspend fun cleanupOlderThan(before: Long)
+
+    @Query("DELETE FROM uploads")
+    suspend fun deleteAll()
 }
 
 // ── Database ──────────────────────────────────────────────────────────────────
