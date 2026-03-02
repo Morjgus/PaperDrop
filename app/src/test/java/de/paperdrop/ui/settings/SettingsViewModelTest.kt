@@ -8,6 +8,7 @@ import de.paperdrop.data.preferences.AppSettings
 import de.paperdrop.data.preferences.SettingsRepository
 import de.paperdrop.worker.DirectoryPollingWorker
 import io.mockk.*
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
@@ -158,5 +159,30 @@ class SettingsViewModelTest {
 
         coVerify { settingsRepository.updateWatchingEnabled(false) }
         verify { DirectoryPollingWorker.cancel(workManager) }
+    }
+
+    @Test
+    fun `toggleWatching preserves unsaved edits to URL and token`() = runTest {
+        val settingsFlow = MutableStateFlow(
+            AppSettings(paperlessUrl = "http://saved", apiToken = "saved-token")
+        )
+        every { settingsRepository.settings } returns settingsFlow
+
+        viewModel = SettingsViewModel(settingsRepository, paperlessRepository, workManager)
+        advanceUntilIdle()
+
+        // User edits URL and token without saving
+        viewModel.onUrlChange("http://new")
+        viewModel.onTokenChange("new-token")
+
+        // User toggles watching; simulate DataStore re-emitting after the write
+        viewModel.toggleWatching(true)
+        settingsFlow.value = settingsFlow.value.copy(isWatchingEnabled = true)
+        advanceUntilIdle()
+
+        // Unsaved edits must survive the settings flow re-emission
+        assertEquals("http://new", viewModel.uiState.value.paperlessUrl)
+        assertEquals("new-token", viewModel.uiState.value.apiToken)
+        assertTrue(viewModel.uiState.value.isWatchingEnabled)
     }
 }

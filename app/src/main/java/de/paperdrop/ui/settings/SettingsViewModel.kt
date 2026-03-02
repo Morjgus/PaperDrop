@@ -28,18 +28,25 @@ class SettingsViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(SettingsUiState())
     val uiState: StateFlow<SettingsUiState> = _uiState.asStateFlow()
 
+    private var settingsLoaded = false
+
     init {
         viewModelScope.launch {
             settingsRepository.settings.collect { s ->
-                _uiState.update {
-                    it.copy(
-                        paperlessUrl      = s.paperlessUrl,
-                        apiToken          = s.apiToken,
-                        watchFolderUri    = s.watchFolderUri,
-                        afterUpload       = s.afterUpload,
-                        moveTargetUri     = s.moveTargetUri,
-                        isWatchingEnabled = s.isWatchingEnabled
-                    )
+                if (!settingsLoaded) {
+                    _uiState.update {
+                        it.copy(
+                            paperlessUrl      = s.paperlessUrl,
+                            apiToken          = s.apiToken,
+                            watchFolderUri    = s.watchFolderUri,
+                            afterUpload       = s.afterUpload,
+                            moveTargetUri     = s.moveTargetUri,
+                            isWatchingEnabled = s.isWatchingEnabled
+                        )
+                    }
+                    settingsLoaded = true
+                } else {
+                    _uiState.update { it.copy(isWatchingEnabled = s.isWatchingEnabled) }
                 }
             }
         }
