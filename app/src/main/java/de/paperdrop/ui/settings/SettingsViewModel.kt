@@ -57,7 +57,7 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
-    fun onUrlChange(v: String)   = _uiState.update { it.copy(paperlessUrl = v, connectionState = ConnectionState.Idle) }
+    fun onUrlChange(v: String)   = _uiState.update { it.copy(paperlessUrl = v, connectionState = ConnectionState.Idle, urlError = null) }
     fun onTokenChange(v: String) = _uiState.update { it.copy(apiToken = v,     connectionState = ConnectionState.Idle) }
     fun onAfterUploadChange(a: AfterUploadAction) = _uiState.update { it.copy(afterUpload = a) }
 
@@ -119,8 +119,12 @@ class SettingsViewModel @Inject constructor(
     }
 
     fun saveSettings() {
+        val s = _uiState.value
+        if (s.paperlessUrl.isNotBlank() && !s.paperlessUrl.startsWith("https://", ignoreCase = true)) {
+            _uiState.update { it.copy(urlError = context.getString(R.string.error_url_https_required)) }
+            return
+        }
         viewModelScope.launch {
-            val s = _uiState.value
             settingsRepository.updateUrl(s.paperlessUrl)
             settingsRepository.updateToken(s.apiToken)
             settingsRepository.updateFolderUri(s.watchFolderUri)
@@ -134,6 +138,11 @@ class SettingsViewModel @Inject constructor(
     fun onSavedFeedbackShown() = _uiState.update { it.copy(savedFeedback = false) }
 
     fun testConnection() {
+        val url = _uiState.value.paperlessUrl
+        if (url.isNotBlank() && !url.startsWith("https://", ignoreCase = true)) {
+            _uiState.update { it.copy(urlError = context.getString(R.string.error_url_https_required)) }
+            return
+        }
         viewModelScope.launch {
             _uiState.update { it.copy(connectionState = ConnectionState.Loading) }
             val result = paperlessRepository.testConnection(_uiState.value.paperlessUrl, _uiState.value.apiToken)
@@ -157,6 +166,7 @@ class SettingsViewModel @Inject constructor(
 
 data class SettingsUiState(
     val paperlessUrl: String           = "",
+    val urlError: String?              = null,
     val apiToken: String               = "",
     val watchFolderUri: String         = "",
     val afterUpload: AfterUploadAction = AfterUploadAction.KEEP,

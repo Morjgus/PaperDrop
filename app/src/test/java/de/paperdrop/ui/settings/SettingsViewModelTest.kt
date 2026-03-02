@@ -82,17 +82,49 @@ class SettingsViewModelTest {
 
     @Test
     fun `saveSettings persists all fields to repository`() = runTest {
-        viewModel.onUrlChange("http://server")
+        viewModel.onUrlChange("https://server")
         viewModel.onTokenChange("mytoken")
 
         viewModel.saveSettings()
         advanceUntilIdle()
 
-        coVerify { settingsRepository.updateUrl("http://server") }
+        coVerify { settingsRepository.updateUrl("https://server") }
         coVerify { settingsRepository.updateToken("mytoken") }
         coVerify { settingsRepository.updateFolderUri(any()) }
         coVerify { settingsRepository.updateAfterUpload(any()) }
         coVerify { settingsRepository.updateMoveTargetUri(any()) }
+    }
+
+    @Test
+    fun `saveSettings rejects http URL and sets urlError`() = runTest {
+        viewModel.onUrlChange("http://server")
+        viewModel.saveSettings()
+        advanceUntilIdle()
+
+        assertNotNull(viewModel.uiState.value.urlError)
+        assertFalse(viewModel.uiState.value.savedFeedback)
+        coVerify(exactly = 0) { settingsRepository.updateUrl(any()) }
+    }
+
+    @Test
+    fun `testConnection rejects http URL and sets urlError`() = runTest {
+        viewModel.onUrlChange("http://server")
+        viewModel.testConnection()
+        advanceUntilIdle()
+
+        assertNotNull(viewModel.uiState.value.urlError)
+        assertEquals(ConnectionState.Idle, viewModel.uiState.value.connectionState)
+        coVerify(exactly = 0) { paperlessRepository.testConnection(any(), any()) }
+    }
+
+    @Test
+    fun `onUrlChange clears urlError`() {
+        viewModel.onUrlChange("http://bad")
+        viewModel.saveSettings()
+        assertNotNull(viewModel.uiState.value.urlError)
+
+        viewModel.onUrlChange("https://good")
+        assertNull(viewModel.uiState.value.urlError)
     }
 
     @Test

@@ -71,6 +71,8 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
                 value = uiState.paperlessUrl, onValueChange = viewModel::onUrlChange,
                 label = { Text(stringResource(R.string.settings_url_label)) }, placeholder = { Text(stringResource(R.string.settings_url_placeholder)) },
                 singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri),
+                isError = uiState.urlError != null,
+                supportingText = uiState.urlError?.let { { Text(it) } },
                 modifier = Modifier.fillMaxWidth()
             )
             OutlinedTextField(

@@ -59,6 +59,7 @@
     <string name="history_empty_subtitle">PDFs in the watched folder will be listed here.</string>
 
     <!-- Errors -->
+    <string name="error_url_https_required">URL must use HTTPS (https://…)</string>
     <string name="error_url_or_token_not_configured">URL or token not configured</string>
     <string name="error_file_open_failed">File could not be opened</string>
     <string name="error_no_task_id">No task ID received</string>
