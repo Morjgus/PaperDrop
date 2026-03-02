@@ -7,6 +7,11 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -32,6 +37,32 @@ fun HistoryScreen(viewModel: HistoryViewModel = hiltViewModel()) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val filtered = viewModel.filteredUploads(uiState)
     var showCleanupDialog by remember { mutableStateOf(false) }
+
+    val lazyListState = rememberLazyListState()
+    var autoScrollEnabled by remember { mutableStateOf(true) }
+
+    // Disable auto-scroll the moment the user touches the list to scroll manually
+    val nestedScrollConnection = remember {
+        object : NestedScrollConnection {
+            override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
+                if (source == NestedScrollSource.UserInput) autoScrollEnabled = false
+                return Offset.Zero
+            }
+        }
+    }
+
+    // Re-enable auto-scroll once the user scrolls back to the top
+    LaunchedEffect(lazyListState) {
+        snapshotFlow { lazyListState.firstVisibleItemIndex }
+            .collect { index -> if (index == 0) autoScrollEnabled = true }
+    }
+
+    // Scroll to top when a new entry arrives (newest items are at index 0)
+    LaunchedEffect(filtered.size) {
+        if (autoScrollEnabled && filtered.isNotEmpty()) {
+            lazyListState.animateScrollToItem(0)
+        }
+    }
 
     if (showCleanupDialog) {
         AlertDialog(
@@ -66,7 +97,12 @@ fun HistoryScreen(viewModel: HistoryViewModel = hiltViewModel()) {
                 when {
                     loading         -> Box(Modifier.fillMaxSize(), Alignment.Center) { CircularProgressIndicator() }
                     filtered.isEmpty() -> EmptyState(uiState.activeFilter != HistoryFilter.ALL || uiState.searchQuery.isNotBlank())
-                    else -> LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    else -> LazyColumn(
+                        state = lazyListState,
+                        modifier = Modifier.nestedScroll(nestedScrollConnection),
+                        contentPadding = PaddingValues(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
                         items(filtered, key = { it.id }) { upload -> UploadCard(upload) }
                     }
                 }
