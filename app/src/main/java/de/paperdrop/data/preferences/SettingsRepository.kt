@@ -25,6 +25,7 @@ class SettingsRepository @Inject constructor(
         val KEY_AFTER_UPLOAD    = stringPreferencesKey("after_upload_action")
         val KEY_MOVE_TARGET_URI = stringPreferencesKey("move_target_uri")
         val KEY_WATCHING        = booleanPreferencesKey("watching_enabled")
+        val KEY_LABEL_IDS       = stringPreferencesKey("selected_label_ids")
     }
 
     val settings: Flow<AppSettings> = context.dataStore.data
@@ -40,7 +41,12 @@ class SettingsRepository @Inject constructor(
                     prefs[KEY_AFTER_UPLOAD] ?: AfterUploadAction.KEEP.name
                 ),
                 moveTargetUri      = prefs[KEY_MOVE_TARGET_URI] ?: "",
-                isWatchingEnabled  = prefs[KEY_WATCHING]        ?: false
+                isWatchingEnabled  = prefs[KEY_WATCHING]        ?: false,
+                selectedLabelIds   = prefs[KEY_LABEL_IDS]
+                    ?.split(",")
+                    ?.mapNotNull { it.trim().toIntOrNull() }
+                    ?.toSet()
+                    ?: emptySet()
             )
         }
 
@@ -50,6 +56,7 @@ class SettingsRepository @Inject constructor(
     suspend fun updateAfterUpload(a: AfterUploadAction) = context.dataStore.edit { it[KEY_AFTER_UPLOAD]    = a.name }
     suspend fun updateMoveTargetUri(uri: String)        = context.dataStore.edit { it[KEY_MOVE_TARGET_URI] = uri }
     suspend fun updateWatchingEnabled(b: Boolean)       = context.dataStore.edit { it[KEY_WATCHING]        = b }
+    suspend fun updateLabelIds(ids: Set<Int>)           = context.dataStore.edit { it[KEY_LABEL_IDS]       = ids.joinToString(",") }
 
     suspend fun getSnapshot(): AppSettings = settings.first()
 }

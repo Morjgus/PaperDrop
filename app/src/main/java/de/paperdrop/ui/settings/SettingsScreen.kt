@@ -24,9 +24,10 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import de.paperdrop.data.api.PaperlessLabel
 import de.paperdrop.data.preferences.AfterUploadAction
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -90,6 +91,19 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
             AnimatedVisibility(visible = uiState.afterUpload == AfterUploadAction.MOVE) {
                 FolderPickerRow(label = "Zielordner", uri = uiState.moveTargetUri, onPick = { moveTargetPicker.launch(null) })
             }
+            HorizontalDivider()
+
+            // ── Labels ──────────────────────────────────────────
+            SectionHeader("Labels")
+            LabelSelector(
+                availableLabels  = uiState.availableLabels,
+                selectedLabelIds = uiState.selectedLabelIds,
+                isLoading        = uiState.labelsLoading,
+                error            = uiState.labelsError,
+                serverConfigured = uiState.paperlessUrl.isNotBlank() && uiState.apiToken.isNotBlank(),
+                onFetch          = viewModel::fetchLabels,
+                onToggle         = viewModel::onLabelToggled
+            )
             HorizontalDivider()
 
             // ── Überwachung ─────────────────────────────────────
@@ -163,6 +177,53 @@ private fun AfterUploadSelector(selected: AfterUploadAction, onSelect: (AfterUpl
                 RadioButton(selected = selected == action, onClick = null)
                 Spacer(Modifier.width(8.dp))
                 Text(label)
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun LabelSelector(
+    availableLabels: List<PaperlessLabel>,
+    selectedLabelIds: Set<Int>,
+    isLoading: Boolean,
+    error: String?,
+    serverConfigured: Boolean,
+    onFetch: () -> Unit,
+    onToggle: (Int) -> Unit
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            OutlinedButton(onClick = onFetch, enabled = serverConfigured && !isLoading) {
+                if (isLoading)
+                    CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
+                else
+                    Text("Labels laden")
+            }
+            if (availableLabels.isNotEmpty())
+                Text(
+                    "${selectedLabelIds.size} von ${availableLabels.size} gewählt",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+        }
+
+        if (!serverConfigured)
+            Text("Bitte zuerst URL und Token konfigurieren.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
+
+        if (error != null)
+            Text(error, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
+
+        if (availableLabels.isNotEmpty()) {
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                availableLabels.forEach { label ->
+                    FilterChip(
+                        selected = label.id in selectedLabelIds,
+                        onClick  = { onToggle(label.id) },
+                        label    = { Text(label.name) }
+                    )
+                }
             }
         }
     }

@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.work.WorkManager
 import dagger.hilt.android.lifecycle.HiltViewModel
+import de.paperdrop.data.api.PaperlessLabel
 import de.paperdrop.data.api.PaperlessRepository
 import de.paperdrop.data.preferences.AfterUploadAction
 import de.paperdrop.data.preferences.SettingsRepository
@@ -41,7 +42,8 @@ class SettingsViewModel @Inject constructor(
                             watchFolderUri    = s.watchFolderUri,
                             afterUpload       = s.afterUpload,
                             moveTargetUri     = s.moveTargetUri,
-                            isWatchingEnabled = s.isWatchingEnabled
+                            isWatchingEnabled = s.isWatchingEnabled,
+                            selectedLabelIds  = s.selectedLabelIds
                         )
                     }
                     settingsLoaded = true
@@ -72,6 +74,34 @@ class SettingsViewModel @Inject constructor(
         _uiState.update { it.copy(moveTargetUri = uri.toString()) }
     }
 
+    fun onLabelToggled(id: Int) {
+        _uiState.update { state ->
+            val updated = if (id in state.selectedLabelIds)
+                state.selectedLabelIds - id
+            else
+                state.selectedLabelIds + id
+            state.copy(selectedLabelIds = updated)
+        }
+    }
+
+    fun fetchLabels() {
+        val url   = _uiState.value.paperlessUrl
+        val token = _uiState.value.apiToken
+        if (url.isBlank() || token.isBlank()) return
+
+        viewModelScope.launch {
+            _uiState.update { it.copy(labelsLoading = true, labelsError = null) }
+            val result = paperlessRepository.fetchLabels(url, token)
+            _uiState.update {
+                it.copy(
+                    labelsLoading    = false,
+                    availableLabels  = result.getOrElse { emptyList() },
+                    labelsError      = result.exceptionOrNull()?.message
+                )
+            }
+        }
+    }
+
     fun saveSettings() {
         viewModelScope.launch {
             val s = _uiState.value
@@ -80,6 +110,7 @@ class SettingsViewModel @Inject constructor(
             settingsRepository.updateFolderUri(s.watchFolderUri)
             settingsRepository.updateAfterUpload(s.afterUpload)
             settingsRepository.updateMoveTargetUri(s.moveTargetUri)
+            settingsRepository.updateLabelIds(s.selectedLabelIds)
             _uiState.update { it.copy(savedFeedback = true) }
         }
     }
@@ -109,14 +140,18 @@ class SettingsViewModel @Inject constructor(
 }
 
 data class SettingsUiState(
-    val paperlessUrl: String      = "",
-    val apiToken: String          = "",
-    val watchFolderUri: String    = "",
+    val paperlessUrl: String           = "",
+    val apiToken: String               = "",
+    val watchFolderUri: String         = "",
     val afterUpload: AfterUploadAction = AfterUploadAction.KEEP,
-    val moveTargetUri: String     = "",
-    val isWatchingEnabled: Boolean = false,
+    val moveTargetUri: String          = "",
+    val isWatchingEnabled: Boolean     = false,
     val connectionState: ConnectionState = ConnectionState.Idle,
-    val savedFeedback: Boolean    = false
+    val savedFeedback: Boolean         = false,
+    val availableLabels: List<PaperlessLabel> = emptyList(),
+    val selectedLabelIds: Set<Int>     = emptySet(),
+    val labelsLoading: Boolean         = false,
+    val labelsError: String?           = null
 )
 
 sealed class ConnectionState {

@@ -2,7 +2,6 @@ package de.paperdrop.data.api
 
 import com.google.gson.annotations.SerializedName
 import okhttp3.MultipartBody
-import okhttp3.RequestBody
 import retrofit2.Response
 import retrofit2.http.*
 
@@ -12,8 +11,7 @@ interface PaperlessApi {
     @POST("api/documents/post_document/")
     suspend fun uploadDocument(
         @Header("Authorization") token: String,
-        @Part document: MultipartBody.Part,
-        @Part("title") title: RequestBody? = null
+        @Part parts: List<MultipartBody.Part>
     ): Response<UploadTaskResponse>
 
     @GET("api/tasks/")
@@ -21,6 +19,12 @@ interface PaperlessApi {
         @Header("Authorization") token: String,
         @Query("task_id") taskId: String
     ): Response<List<TaskStatusResponse>>
+
+    @GET("api/tags/")
+    suspend fun getTags(
+        @Header("Authorization") token: String,
+        @Query("page_size") pageSize: Int = 250
+    ): Response<TagsResponse>
 
     @GET("api/")
     suspend fun ping(
@@ -37,4 +41,13 @@ data class TaskStatusResponse(
     @SerializedName("status")         val status: String,
     @SerializedName("result")         val result: Int?,
     @SerializedName("task_file_name") val fileName: String?
+)
+
+data class TagsResponse(
+    @SerializedName("results") val results: List<PaperlessLabel>
+)
+
+data class PaperlessLabel(
+    @SerializedName("id")   val id: Int,
+    @SerializedName("name") val name: String
 )

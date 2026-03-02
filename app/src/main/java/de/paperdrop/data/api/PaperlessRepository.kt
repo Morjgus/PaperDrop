@@ -26,6 +26,13 @@ class PaperlessRepository @Inject constructor(
             throw Exception("HTTP ${response.code()}: ${response.message()}")
     }
 
+    suspend fun fetchLabels(url: String, token: String): Result<List<PaperlessLabel>> = runCatching {
+        val response = apiClientProvider.getApi(url).getTags("Token $token")
+        if (!response.isSuccessful)
+            throw Exception("HTTP ${response.code()}: ${response.message()}")
+        response.body()?.results ?: emptyList()
+    }
+
     suspend fun uploadPdf(fileUri: Uri): UploadResult {
         val settings = settingsRepository.getSnapshot()
         if (settings.paperlessUrl.isBlank() || settings.apiToken.isBlank())
@@ -37,10 +44,15 @@ class PaperlessRepository @Inject constructor(
             val bytes    = context.contentResolver.openInputStream(fileUri)?.readBytes()
                 ?: return UploadResult.Error("Datei konnte nicht geöffnet werden")
 
-            val body = bytes.toRequestBody("application/pdf".toMediaType())
-            val part = MultipartBody.Part.createFormData("document", fileName, body)
+            val body  = bytes.toRequestBody("application/pdf".toMediaType())
+            val parts = buildList {
+                add(MultipartBody.Part.createFormData("document", fileName, body))
+                settings.selectedLabelIds.forEach { id ->
+                    add(MultipartBody.Part.createFormData("tags", id.toString()))
+                }
+            }
 
-            val response = api.uploadDocument("Token ${settings.apiToken}", part)
+            val response = api.uploadDocument("Token ${settings.apiToken}", parts)
             if (response.isSuccessful) {
                 val taskId = response.body()?.taskId
                     ?: return UploadResult.Error("Keine Task-ID erhalten")

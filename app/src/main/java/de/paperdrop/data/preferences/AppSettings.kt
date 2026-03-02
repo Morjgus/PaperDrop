@@ -6,7 +6,8 @@ data class AppSettings(
     val watchFolderUri: String      = "",
     val afterUpload: AfterUploadAction = AfterUploadAction.KEEP,
     val moveTargetUri: String       = "",
-    val isWatchingEnabled: Boolean  = false
+    val isWatchingEnabled: Boolean  = false,
+    val selectedLabelIds: Set<Int>  = emptySet()
 )
 
 enum class AfterUploadAction { KEEP, DELETE, MOVE }

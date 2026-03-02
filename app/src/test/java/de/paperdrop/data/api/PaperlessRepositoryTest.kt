@@ -91,7 +91,7 @@ class PaperlessRepositoryTest {
     fun `uploadPdf returns Success with taskId on HTTP 200`() = runTest {
         coEvery { settingsRepository.getSnapshot() } returns defaultSettings
         every { mockContentResolver.openInputStream(any()) } returns ByteArrayInputStream(byteArrayOf(1, 2, 3))
-        coEvery { api.uploadDocument(any(), any(), any()) } returns
+        coEvery { api.uploadDocument(any(), any()) } returns
             Response.success(UploadTaskResponse("task-123"))
 
         val result = repository.uploadPdf(mockk())
@@ -103,7 +103,7 @@ class PaperlessRepositoryTest {
     fun `uploadPdf returns error on HTTP 500`() = runTest {
         coEvery { settingsRepository.getSnapshot() } returns defaultSettings
         every { mockContentResolver.openInputStream(any()) } returns ByteArrayInputStream(byteArrayOf(1))
-        coEvery { api.uploadDocument(any(), any(), any()) } returns
+        coEvery { api.uploadDocument(any(), any()) } returns
             Response.error(500, "Server error".toResponseBody())
 
         val result = repository.uploadPdf(mockk())
@@ -115,7 +115,7 @@ class PaperlessRepositoryTest {
     fun `uploadPdf returns error on IOException`() = runTest {
         coEvery { settingsRepository.getSnapshot() } returns defaultSettings
         every { mockContentResolver.openInputStream(any()) } returns ByteArrayInputStream(byteArrayOf(1))
-        coEvery { api.uploadDocument(any(), any(), any()) } throws IOException("timeout")
+        coEvery { api.uploadDocument(any(), any()) } throws IOException("timeout")
 
         val result = repository.uploadPdf(mockk())
         assertTrue(result is UploadResult.Error)
@@ -126,7 +126,7 @@ class PaperlessRepositoryTest {
     fun `uploadPdf returns error when taskId is missing`() = runTest {
         coEvery { settingsRepository.getSnapshot() } returns defaultSettings
         every { mockContentResolver.openInputStream(any()) } returns ByteArrayInputStream(byteArrayOf(1))
-        coEvery { api.uploadDocument(any(), any(), any()) } returns
+        coEvery { api.uploadDocument(any(), any()) } returns
             Response.success(UploadTaskResponse(""))
 
         // Empty taskId is still a "Success" – a blank taskId would be caught by Paperless;
