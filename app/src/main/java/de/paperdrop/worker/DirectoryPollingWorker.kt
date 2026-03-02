@@ -43,6 +43,16 @@ class DirectoryPollingWorker @AssistedInject constructor(
         fun cancel(workManager: WorkManager) {
             workManager.cancelUniqueWork(WORK_NAME)
         }
+
+        fun scanNow(workManager: WorkManager) {
+            workManager.enqueueUniqueWork(
+                "foreground_scan",
+                ExistingWorkPolicy.KEEP,
+                OneTimeWorkRequestBuilder<DirectoryPollingWorker>()
+                    .addTag("polling")
+                    .build()
+            )
+        }
     }
 
     override suspend fun doWork(): Result {

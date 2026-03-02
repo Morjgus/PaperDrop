@@ -24,9 +24,13 @@ import dagger.hilt.android.AndroidEntryPoint
 import de.paperdrop.ui.navigation.PaperlessNavGraph
 import de.paperdrop.ui.navigation.Screen
 import de.paperdrop.ui.theme.PaperDropTheme
+import de.paperdrop.worker.ForegroundFolderWatcher
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    @Inject lateinit var folderWatcher: ForegroundFolderWatcher
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,6 +40,16 @@ class MainActivity : ComponentActivity() {
                 AppContent()
             }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        folderWatcher.start()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        folderWatcher.stop()
     }
 }
 
