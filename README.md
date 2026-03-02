@@ -44,6 +44,23 @@ app/src/main/java/de/paperdrop/
     └── UploadWorker.kt             # Upload PDF + handle file
 ```
 
+## Build from Source
+
+Requirements: Android Studio or the Android SDK with build tools, JDK 17+.
+
+```bash
+git clone https://github.com/Morjgus/PaperDrop.git
+cd PaperDrop
+./gradlew assembleDebug
+# APK: app/build/outputs/apk/debug/app-debug.apk
+```
+
+Install directly on a connected device:
+
+```bash
+./gradlew installDebug
+```
+
 ## Setup
 
 1. Enter the Paperless-ngx server URL and API token in Settings

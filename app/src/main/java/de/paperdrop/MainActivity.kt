@@ -76,8 +76,8 @@ private data class NavItem(
 )
 
 private val navItems = listOf(
-    NavItem(Screen.History,  "Verlauf",         Icons.Filled.History,  Icons.Outlined.History),
-    NavItem(Screen.Settings, "Einstellungen",   Icons.Filled.Settings, Icons.Outlined.Settings)
+    NavItem(Screen.History,  "History",  Icons.Filled.History,  Icons.Outlined.History),
+    NavItem(Screen.Settings, "Settings", Icons.Filled.Settings, Icons.Outlined.Settings)
 )
 
 @Composable
