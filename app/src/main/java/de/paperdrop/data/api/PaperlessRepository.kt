@@ -84,11 +84,21 @@ class PaperlessRepository @Inject constructor(
                 ?: return UploadResult.Error("Task nicht gefunden")
 
             when (task.status) {
-                "SUCCESS" -> return UploadResult.Completed(task.result ?: -1, task.fileName ?: "")
+                "SUCCESS" -> return UploadResult.Completed(parseDocumentId(task.result), task.fileName ?: "")
                 "FAILURE" -> return UploadResult.Error("Paperless-Verarbeitung fehlgeschlagen")
             }
         }
         return UploadResult.Error("Timeout: Paperless hat nicht geantwortet")
+    }
+
+    private fun parseDocumentId(result: String?): Int {
+        if (result == null) return -1
+        result.trim().toIntOrNull()?.let { return it }
+        // "Success. New document id 28 created"
+        Regex("""(?i)id\s+(\d+)""").find(result)?.groupValues?.get(1)?.toIntOrNull()?.let { return it }
+        // "It is a duplicate of SomeName (#27)."
+        Regex("""\(#(\d+)\)""").find(result)?.groupValues?.get(1)?.toIntOrNull()?.let { return it }
+        return -1
     }
 
     private fun resolveFileName(uri: Uri): String {

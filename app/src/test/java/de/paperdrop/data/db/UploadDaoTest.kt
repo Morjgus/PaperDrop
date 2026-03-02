@@ -46,18 +46,17 @@ class UploadDaoTest {
     }
 
     @Test
-    fun `getAllUris returns only SUCCESS uris`() = runBlocking {
+    fun `getAllUris returns all tracked uris regardless of status`() = runBlocking {
         dao.insert(entity(fileUri = "content://success", status = UploadStatus.SUCCESS))
         dao.insert(entity(fileUri = "content://failed",  status = UploadStatus.FAILED))
         dao.insert(entity(fileUri = "content://running", status = UploadStatus.RUNNING))
 
-        val uris = dao.getAllUris()
-        assertEquals(listOf("content://success"), uris)
+        val uris = dao.getAllUris().toSet()
+        assertEquals(setOf("content://success", "content://failed", "content://running"), uris)
     }
 
     @Test
-    fun `getAllUris returns empty list when no SUCCESS records`() = runBlocking {
-        dao.insert(entity(status = UploadStatus.FAILED))
+    fun `getAllUris returns empty list when table is empty`() = runBlocking {
         assertTrue(dao.getAllUris().isEmpty())
     }
 

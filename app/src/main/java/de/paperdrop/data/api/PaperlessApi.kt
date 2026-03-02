@@ -36,7 +36,7 @@ interface PaperlessApi {
 data class TaskStatusResponse(
     @SerializedName("task_id")        val taskId: String,
     @SerializedName("status")         val status: String,
-    @SerializedName("result")         val result: Int?,
+    @SerializedName("result")         val result: String?,
     @SerializedName("task_file_name") val fileName: String?
 )
 

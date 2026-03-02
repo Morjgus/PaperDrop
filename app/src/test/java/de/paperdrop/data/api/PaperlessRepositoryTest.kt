@@ -135,13 +135,33 @@ class PaperlessRepositoryTest {
         assertTrue(result is UploadResult.Error)
     }
 
+    @Test
+    fun `waitForTask extracts document id from success message string`() = runTest {
+        coEvery { settingsRepository.getSnapshot() } returns defaultSettings
+        coEvery { api.getTaskStatus(any(), any()) } returns Response.success(
+            listOf(TaskStatusResponse("t", "SUCCESS", "Success. New document id 28 created", "doc.pdf"))
+        )
+        val result = repository.waitForTask("t", maxAttempts = 1)
+        assertEquals(UploadResult.Completed(28, "doc.pdf"), result)
+    }
+
+    @Test
+    fun `waitForTask extracts document id from duplicate message`() = runTest {
+        coEvery { settingsRepository.getSnapshot() } returns defaultSettings
+        coEvery { api.getTaskStatus(any(), any()) } returns Response.success(
+            listOf(TaskStatusResponse("t", "SUCCESS", "Not consuming file.pdf: It is a duplicate of file (#27).", "doc.pdf"))
+        )
+        val result = repository.waitForTask("t", maxAttempts = 1)
+        assertEquals(UploadResult.Completed(27, "doc.pdf"), result)
+    }
+
     // ── waitForTask ─────────────────────────────────────────────────────────────
 
     @Test
     fun `waitForTask returns Completed on SUCCESS status`() = runTest {
         coEvery { settingsRepository.getSnapshot() } returns defaultSettings
         coEvery { api.getTaskStatus(any(), any()) } returns Response.success(
-            listOf(TaskStatusResponse("t", "SUCCESS", 42, "doc.pdf"))
+            listOf(TaskStatusResponse("t", "SUCCESS", "42", "doc.pdf"))
         )
         val result = repository.waitForTask("t", maxAttempts = 1)
         assertEquals(UploadResult.Completed(42, "doc.pdf"), result)
@@ -151,7 +171,7 @@ class PaperlessRepositoryTest {
     fun `waitForTask returns Error on FAILURE status`() = runTest {
         coEvery { settingsRepository.getSnapshot() } returns defaultSettings
         coEvery { api.getTaskStatus(any(), any()) } returns Response.success(
-            listOf(TaskStatusResponse("t", "FAILURE", null, null))
+            listOf(TaskStatusResponse("t", "FAILURE", "some error", null))
         )
         val result = repository.waitForTask("t", maxAttempts = 1)
         assertTrue(result is UploadResult.Error)
@@ -162,7 +182,7 @@ class PaperlessRepositoryTest {
         coEvery { settingsRepository.getSnapshot() } returns defaultSettings
         coEvery { api.getTaskStatus(any(), any()) } returnsMany listOf(
             Response.success(listOf(TaskStatusResponse("t", "PENDING", null, null))),
-            Response.success(listOf(TaskStatusResponse("t", "SUCCESS", 7, "file.pdf")))
+            Response.success(listOf(TaskStatusResponse("t", "SUCCESS", "7", "file.pdf")))
         )
         val result = repository.waitForTask("t", maxAttempts = 3)
         assertEquals(UploadResult.Completed(7, "file.pdf"), result)

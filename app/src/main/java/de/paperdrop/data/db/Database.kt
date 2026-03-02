@@ -32,7 +32,7 @@ interface UploadDao {
     @Query("UPDATE uploads SET status = :status, documentId = :documentId WHERE id = :id")
     suspend fun updateStatus(id: Long, status: UploadStatus, documentId: Int)
 
-    @Query("SELECT fileUri FROM uploads WHERE status = 'SUCCESS'")
+    @Query("SELECT fileUri FROM uploads")
     suspend fun getAllUris(): List<String>
 
     @Query("SELECT * FROM uploads ORDER BY timestamp DESC")
