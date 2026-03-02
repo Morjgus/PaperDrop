@@ -7,6 +7,7 @@ import de.paperdrop.data.preferences.SettingsRepository
 import de.paperdrop.domain.UploadResult
 import io.mockk.*
 import kotlinx.coroutines.test.runTest
+import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.ResponseBody.Companion.toResponseBody
 import org.junit.After
 import org.junit.Assert.*
@@ -92,7 +93,7 @@ class PaperlessRepositoryTest {
         coEvery { settingsRepository.getSnapshot() } returns defaultSettings
         every { mockContentResolver.openInputStream(any()) } returns ByteArrayInputStream(byteArrayOf(1, 2, 3))
         coEvery { api.uploadDocument(any(), any()) } returns
-            Response.success(UploadTaskResponse("task-123"))
+            Response.success("\"task-123\"".toResponseBody("text/plain".toMediaType()))
 
         val result = repository.uploadPdf(mockk())
         assertTrue(result is UploadResult.Success)
@@ -104,7 +105,7 @@ class PaperlessRepositoryTest {
         coEvery { settingsRepository.getSnapshot() } returns defaultSettings
         every { mockContentResolver.openInputStream(any()) } returns ByteArrayInputStream(byteArrayOf(1))
         coEvery { api.uploadDocument(any(), any()) } returns
-            Response.error(500, "Server error".toResponseBody())
+            Response.error(500, "Server error".toResponseBody(null))
 
         val result = repository.uploadPdf(mockk())
         assertTrue(result is UploadResult.Error)
@@ -123,17 +124,15 @@ class PaperlessRepositoryTest {
     }
 
     @Test
-    fun `uploadPdf returns error when taskId is missing`() = runTest {
+    fun `uploadPdf returns error when taskId is blank`() = runTest {
         coEvery { settingsRepository.getSnapshot() } returns defaultSettings
         every { mockContentResolver.openInputStream(any()) } returns ByteArrayInputStream(byteArrayOf(1))
         coEvery { api.uploadDocument(any(), any()) } returns
-            Response.success(UploadTaskResponse(""))
+            Response.success("\"\"".toResponseBody("text/plain".toMediaType()))
 
-        // Empty taskId is still a "Success" – a blank taskId would be caught by Paperless;
-        // verify at least the Success path is followed (not an Error from null body).
+        // Empty task ID string → repository returns Error
         val result = repository.uploadPdf(mockk())
-        // Body is non-null so we get Success (empty taskId propagated as-is)
-        assertTrue(result is UploadResult.Success)
+        assertTrue(result is UploadResult.Error)
     }
 
     // ── waitForTask ─────────────────────────────────────────────────────────────

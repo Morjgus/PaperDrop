@@ -54,7 +54,11 @@ class PaperlessRepository @Inject constructor(
 
             val response = api.uploadDocument("Token ${settings.apiToken}", parts)
             if (response.isSuccessful) {
-                val taskId = response.body()?.taskId
+                // Paperless-ngx returns the task ID as a plain JSON string: "uuid-here"
+                val taskId = response.body()?.string()
+                    ?.trim()
+                    ?.removeSurrounding("\"")
+                    ?.takeIf { it.isNotBlank() }
                     ?: return UploadResult.Error("Keine Task-ID erhalten")
                 UploadResult.Success(taskId = taskId, fileName = fileName)
             } else {

@@ -2,6 +2,7 @@ package de.paperdrop.data.api
 
 import com.google.gson.annotations.SerializedName
 import okhttp3.MultipartBody
+import okhttp3.ResponseBody
 import retrofit2.Response
 import retrofit2.http.*
 
@@ -12,7 +13,7 @@ interface PaperlessApi {
     suspend fun uploadDocument(
         @Header("Authorization") token: String,
         @Part parts: List<MultipartBody.Part>
-    ): Response<UploadTaskResponse>
+    ): Response<ResponseBody>
 
     @GET("api/tasks/")
     suspend fun getTaskStatus(
@@ -31,10 +32,6 @@ interface PaperlessApi {
         @Header("Authorization") token: String
     ): Response<Unit>
 }
-
-data class UploadTaskResponse(
-    @SerializedName("task_id") val taskId: String
-)
 
 data class TaskStatusResponse(
     @SerializedName("task_id")        val taskId: String,
