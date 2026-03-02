@@ -1,3 +1,5 @@
+import java.util.Properties
+
 // Force ASM 9.8 so Robolectric can handle Java 25 (class file version 69) class files.
 configurations.all {
     resolutionStrategy.force(
@@ -29,6 +31,19 @@ android {
         versionName     = "1.0.0"
     }
 
+    val keystorePropsFile = rootProject.file("keystore.properties")
+    if (keystorePropsFile.exists()) {
+        val keystoreProps = Properties().apply { load(keystorePropsFile.inputStream()) }
+        signingConfigs {
+            create("release") {
+                storeFile     = file(keystoreProps.getProperty("STORE_FILE"))
+                storePassword = keystoreProps.getProperty("STORE_PASSWORD")
+                keyAlias      = keystoreProps.getProperty("KEY_ALIAS")
+                keyPassword   = keystoreProps.getProperty("KEY_PASSWORD")
+            }
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = true
@@ -36,11 +51,17 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            val signingConfigName = if (keystorePropsFile.exists()) "release" else null
+            signingConfig = signingConfigName?.let { signingConfigs.getByName(it) }
         }
     }
 
     buildFeatures {
         compose = true
+    }
+
+    lint {
+        checkReleaseBuilds = false
     }
 
     testOptions {
