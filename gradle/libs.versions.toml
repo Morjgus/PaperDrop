@@ -15,6 +15,12 @@ room                = "2.6.1"
 datastore           = "1.1.1"
 coroutines          = "1.9.0"
 documentfile        = "1.0.1"
+junit4              = "4.13.2"
+mockk               = "1.13.12"
+turbine             = "1.2.0"
+robolectric         = "4.14.1"
+archCoreTesting     = "2.2.0"
+androidxTestCore    = "1.6.1"
 
 [libraries]
 # Compose
@@ -60,6 +66,17 @@ kotlinx-coroutines-android  = { group = "org.jetbrains.kotlinx", name = "kotlinx
 
 # DocumentFile (SAF)
 documentfile                = { group = "androidx.documentfile", name = "documentfile",        version.ref = "documentfile" }
+
+# Testing
+junit                       = { group = "junit",                    name = "junit",                          version.ref = "junit4" }
+mockk                       = { group = "io.mockk",                 name = "mockk",                          version.ref = "mockk" }
+turbine                     = { group = "app.cash.turbine",         name = "turbine",                        version.ref = "turbine" }
+robolectric                 = { group = "org.robolectric",          name = "robolectric",                    version.ref = "robolectric" }
+arch-core-testing           = { group = "androidx.arch.core",       name = "core-testing",                   version.ref = "archCoreTesting" }
+kotlinx-coroutines-test     = { group = "org.jetbrains.kotlinx",   name = "kotlinx-coroutines-test",        version.ref = "coroutines" }
+room-testing                = { group = "androidx.room",            name = "room-testing",                   version.ref = "room" }
+work-testing                = { group = "androidx.work",            name = "work-testing",                   version.ref = "workManager" }
+androidx-test-core          = { group = "androidx.test",            name = "core",                           version.ref = "androidxTestCore" }
 
 [plugins]
 android-application         = { id = "com.android.application",              version.ref = "agp" }

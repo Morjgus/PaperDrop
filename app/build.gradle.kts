@@ -1,3 +1,14 @@
+// Force ASM 9.8 so Robolectric can handle Java 25 (class file version 69) class files.
+configurations.all {
+    resolutionStrategy.force(
+        "org.ow2.asm:asm:9.8",
+        "org.ow2.asm:asm-commons:9.8",
+        "org.ow2.asm:asm-tree:9.8",
+        "org.ow2.asm:asm-util:9.8",
+        "org.ow2.asm:asm-analysis:9.8"
+    )
+}
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -30,6 +41,17 @@ android {
 
     buildFeatures {
         compose = true
+    }
+
+    testOptions {
+        unitTests.all {
+            it.jvmArgs(
+                "--add-opens=java.base/sun.misc=ALL-UNNAMED",
+                "--add-opens=java.base/java.lang=ALL-UNNAMED",
+                "--add-opens=java.base/java.lang.reflect=ALL-UNNAMED",
+                "--add-exports=java.base/sun.misc=ALL-UNNAMED"
+            )
+        }
     }
 
     compileOptions {
@@ -90,4 +112,15 @@ dependencies {
 
     // Debug
     debugImplementation(libs.compose.ui.preview)
+
+    // Unit tests
+    testImplementation(libs.junit)
+    testImplementation(libs.mockk)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.turbine)
+    testImplementation(libs.arch.core.testing)
+    testImplementation(libs.room.testing)
+    testImplementation(libs.work.testing)
+    testImplementation(libs.robolectric)
+    testImplementation(libs.androidx.test.core)
 }
