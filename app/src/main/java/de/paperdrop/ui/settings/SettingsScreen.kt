@@ -22,8 +22,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import de.paperdrop.R
 import de.paperdrop.data.api.PaperlessLabel
 import de.paperdrop.data.preferences.AfterUploadAction
 
@@ -41,15 +43,16 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
         uri?.let { viewModel.onMoveTargetSelected(it, context) }
     }
 
+    val savedText = stringResource(R.string.settings_saved)
     LaunchedEffect(uiState.savedFeedback) {
         if (uiState.savedFeedback) {
-            snackbarHostState.showSnackbar("Einstellungen gespeichert")
+            snackbarHostState.showSnackbar(savedText)
             viewModel.onSavedFeedbackShown()
         }
     }
 
     Scaffold(
-        topBar = { TopAppBar(title = { Text("Einstellungen") }) },
+        topBar = { TopAppBar(title = { Text(stringResource(R.string.settings_screen_title)) }) },
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { padding ->
         Column(
@@ -63,16 +66,16 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
             Spacer(Modifier.height(8.dp))
 
             // ── Verbindung ──────────────────────────────────────
-            SectionHeader("Paperless-ngx Verbindung")
+            SectionHeader(stringResource(R.string.settings_section_connection))
             OutlinedTextField(
                 value = uiState.paperlessUrl, onValueChange = viewModel::onUrlChange,
-                label = { Text("Server-URL") }, placeholder = { Text("https://paperless.example.com") },
+                label = { Text(stringResource(R.string.settings_url_label)) }, placeholder = { Text(stringResource(R.string.settings_url_placeholder)) },
                 singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri),
                 modifier = Modifier.fillMaxWidth()
             )
             OutlinedTextField(
                 value = uiState.apiToken, onValueChange = viewModel::onTokenChange,
-                label = { Text("API Token") }, singleLine = true,
+                label = { Text(stringResource(R.string.settings_token_label)) }, singleLine = true,
                 visualTransformation = PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 modifier = Modifier.fillMaxWidth()
@@ -81,20 +84,20 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
             HorizontalDivider()
 
             // ── Ordner ──────────────────────────────────────────
-            SectionHeader("Überwachter Ordner")
-            FolderPickerRow(label = "Quellordner", uri = uiState.watchFolderUri, onPick = { folderPicker.launch(null) })
+            SectionHeader(stringResource(R.string.settings_section_folder))
+            FolderPickerRow(label = stringResource(R.string.settings_source_folder_label), uri = uiState.watchFolderUri, onPick = { folderPicker.launch(null) })
             HorizontalDivider()
 
             // ── Verhalten ───────────────────────────────────────
-            SectionHeader("Nach dem Upload")
+            SectionHeader(stringResource(R.string.settings_section_after_upload))
             AfterUploadSelector(selected = uiState.afterUpload, onSelect = viewModel::onAfterUploadChange)
             AnimatedVisibility(visible = uiState.afterUpload == AfterUploadAction.MOVE) {
-                FolderPickerRow(label = "Zielordner", uri = uiState.moveTargetUri, onPick = { moveTargetPicker.launch(null) })
+                FolderPickerRow(label = stringResource(R.string.settings_target_folder_label), uri = uiState.moveTargetUri, onPick = { moveTargetPicker.launch(null) })
             }
             HorizontalDivider()
 
             // ── Labels ──────────────────────────────────────────
-            SectionHeader("Labels")
+            SectionHeader(stringResource(R.string.settings_section_labels))
             LabelSelector(
                 availableLabels  = uiState.availableLabels,
                 selectedLabelIds = uiState.selectedLabelIds,
@@ -107,7 +110,7 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
             HorizontalDivider()
 
             // ── Überwachung ─────────────────────────────────────
-            SectionHeader("Überwachung")
+            SectionHeader(stringResource(R.string.settings_section_watching))
             WatchingToggleRow(
                 enabled           = uiState.isWatchingEnabled,
                 folderConfigured  = uiState.watchFolderUri.isNotBlank(),
@@ -117,7 +120,7 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
             HorizontalDivider()
 
             Button(onClick = viewModel::saveSettings, modifier = Modifier.fillMaxWidth()) {
-                Text("Einstellungen speichern")
+                Text(stringResource(R.string.settings_save_button))
             }
             Spacer(Modifier.height(16.dp))
         }
@@ -133,7 +136,7 @@ private fun ConnectionTestButton(state: ConnectionState, onTest: () -> Unit) {
         OutlinedButton(onClick = onTest, enabled = state !is ConnectionState.Loading) {
             if (state is ConnectionState.Loading)
                 CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
-            else Text("Verbindung testen")
+            else Text(stringResource(R.string.settings_test_connection_button))
         }
         when (state) {
             is ConnectionState.Success -> Icon(Icons.Default.CheckCircle, null, tint = Color(0xFF4CAF50))
@@ -145,8 +148,9 @@ private fun ConnectionTestButton(state: ConnectionState, onTest: () -> Unit) {
 
 @Composable
 private fun FolderPickerRow(label: String, uri: String, onPick: () -> Unit) {
-    val displayPath = remember(uri) {
-        if (uri.isBlank()) "Kein Ordner gewählt"
+    val noFolderText = stringResource(R.string.settings_no_folder_selected)
+    val displayPath = remember(uri, noFolderText) {
+        if (uri.isBlank()) noFolderText
         else android.net.Uri.decode(uri).substringAfterLast(":").ifBlank { uri }
     }
     Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
@@ -158,14 +162,18 @@ private fun FolderPickerRow(label: String, uri: String, onPick: () -> Unit) {
         OutlinedButton(onClick = onPick) {
             Icon(Icons.Default.FolderOpen, null, modifier = Modifier.size(18.dp))
             Spacer(Modifier.width(4.dp))
-            Text("Wählen")
+            Text(stringResource(R.string.settings_choose_folder_button))
         }
     }
 }
 
 @Composable
 private fun AfterUploadSelector(selected: AfterUploadAction, onSelect: (AfterUploadAction) -> Unit) {
-    val options = listOf(AfterUploadAction.KEEP to "Behalten", AfterUploadAction.DELETE to "Löschen", AfterUploadAction.MOVE to "Verschieben")
+    val options = listOf(
+        AfterUploadAction.KEEP   to stringResource(R.string.settings_after_upload_keep),
+        AfterUploadAction.DELETE to stringResource(R.string.settings_after_upload_delete),
+        AfterUploadAction.MOVE   to stringResource(R.string.settings_after_upload_move)
+    )
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         options.forEach { (action, label) ->
             Row(
@@ -199,18 +207,18 @@ private fun LabelSelector(
                 if (isLoading)
                     CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
                 else
-                    Text("Labels laden")
+                    Text(stringResource(R.string.settings_load_labels_button))
             }
             if (availableLabels.isNotEmpty())
                 Text(
-                    "${selectedLabelIds.size} von ${availableLabels.size} gewählt",
+                    stringResource(R.string.settings_labels_selected_count, selectedLabelIds.size, availableLabels.size),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
         }
 
         if (!serverConfigured)
-            Text("Bitte zuerst URL und Token konfigurieren.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
+            Text(stringResource(R.string.settings_labels_config_required), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
 
         if (error != null)
             Text(error, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
@@ -235,15 +243,15 @@ private fun WatchingToggleRow(enabled: Boolean, folderConfigured: Boolean, serve
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
             Column {
-                Text("Automatisch überwachen", style = MaterialTheme.typography.bodyMedium)
+                Text(stringResource(R.string.settings_auto_watch_label), style = MaterialTheme.typography.bodyMedium)
                 Text(
-                    if (enabled) "Aktiv — prüft alle 15 Minuten" else "Inaktiv",
+                    if (enabled) stringResource(R.string.settings_watching_active) else stringResource(R.string.settings_watching_inactive),
                     style = MaterialTheme.typography.bodySmall,
                     color = if (enabled) Color(0xFF4CAF50) else MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
             Switch(checked = enabled, onCheckedChange = onToggle, enabled = canEnable)
         }
-        if (!canEnable) Text("Bitte zuerst URL, Token und Ordner konfigurieren.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
+        if (!canEnable) Text(stringResource(R.string.settings_watching_config_required), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
     }
 }

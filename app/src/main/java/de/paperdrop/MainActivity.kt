@@ -17,6 +17,9 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
+import androidx.annotation.StringRes
+import de.paperdrop.R
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
@@ -84,14 +87,14 @@ private fun AppContent() {
 
 private data class NavItem(
     val screen: Screen,
-    val label: String,
+    @StringRes val labelRes: Int,
     val selectedIcon: ImageVector,
     val unselectedIcon: ImageVector
 )
 
 private val navItems = listOf(
-    NavItem(Screen.History,  "History",  Icons.Filled.History,  Icons.Outlined.History),
-    NavItem(Screen.Settings, "Settings", Icons.Filled.Settings, Icons.Outlined.Settings)
+    NavItem(Screen.History,  R.string.nav_history,  Icons.Filled.History,  Icons.Outlined.History),
+    NavItem(Screen.Settings, R.string.nav_settings, Icons.Filled.Settings, Icons.Outlined.Settings)
 )
 
 @Composable
@@ -108,10 +111,10 @@ private fun PaperlessBottomBar(
                 icon          = {
                     Icon(
                         imageVector     = if (isSelected) item.selectedIcon else item.unselectedIcon,
-                        contentDescription = item.label
+                        contentDescription = stringResource(item.labelRes)
                     )
                 },
-                label = { Text(item.label) }
+                label = { Text(stringResource(item.labelRes)) }
             )
         }
     }

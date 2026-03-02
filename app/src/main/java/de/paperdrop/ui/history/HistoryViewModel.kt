@@ -1,8 +1,10 @@
 package de.paperdrop.ui.history
 
+import androidx.annotation.StringRes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import de.paperdrop.R
 import de.paperdrop.data.db.UploadDao
 import de.paperdrop.data.db.UploadEntity
 import de.paperdrop.data.db.UploadStatus
@@ -78,6 +80,9 @@ data class HistoryUiState(
 
 data class UploadStats(val total: Int = 0, val success: Int = 0, val failed: Int = 0, val running: Int = 0)
 
-enum class HistoryFilter(val label: String) {
-    ALL("Alle"), SUCCESS("Erfolgreich"), FAILED("Fehlgeschlagen"), RUNNING("Läuft")
+enum class HistoryFilter(@StringRes val labelRes: Int) {
+    ALL(R.string.history_filter_all),
+    SUCCESS(R.string.history_filter_success),
+    FAILED(R.string.history_filter_failed),
+    RUNNING(R.string.history_filter_running)
 }

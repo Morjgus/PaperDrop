@@ -7,6 +7,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.work.WorkManager
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
+import de.paperdrop.R
 import de.paperdrop.data.api.PaperlessLabel
 import de.paperdrop.data.api.PaperlessRepository
 import de.paperdrop.data.preferences.AfterUploadAction
@@ -23,7 +25,8 @@ import javax.inject.Inject
 class SettingsViewModel @Inject constructor(
     private val settingsRepository: SettingsRepository,
     private val paperlessRepository: PaperlessRepository,
-    private val workManager: WorkManager
+    private val workManager: WorkManager,
+    @ApplicationContext private val context: Context
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SettingsUiState())
@@ -124,7 +127,7 @@ class SettingsViewModel @Inject constructor(
             _uiState.update {
                 it.copy(
                     connectionState = if (result.isSuccess) ConnectionState.Success
-                    else ConnectionState.Error(result.exceptionOrNull()?.message ?: "Fehler")
+                    else ConnectionState.Error(result.exceptionOrNull()?.message ?: context.getString(R.string.error_connection_unknown))
                 )
             }
         }

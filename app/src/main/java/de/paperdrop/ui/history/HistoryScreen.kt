@@ -24,8 +24,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import de.paperdrop.R
 import de.paperdrop.data.db.UploadEntity
 import de.paperdrop.data.db.UploadStatus
 import java.text.SimpleDateFormat
@@ -68,20 +70,20 @@ fun HistoryScreen(viewModel: HistoryViewModel = hiltViewModel()) {
         AlertDialog(
             onDismissRequest = { showCleanupDialog = false },
             icon    = { Icon(Icons.Default.DeleteSweep, null) },
-            title   = { Text("Verlauf löschen") },
-            text    = { Text("Alle Einträge werden aus dem Verlauf entfernt. Dokumente in Paperless bleiben erhalten.") },
-            confirmButton = { TextButton(onClick = { viewModel.clearAll(); showCleanupDialog = false }) { Text("Löschen") } },
-            dismissButton = { TextButton(onClick = { showCleanupDialog = false }) { Text("Abbrechen") } }
+            title   = { Text(stringResource(R.string.history_clear_dialog_title)) },
+            text    = { Text(stringResource(R.string.history_clear_dialog_message)) },
+            confirmButton = { TextButton(onClick = { viewModel.clearAll(); showCleanupDialog = false }) { Text(stringResource(R.string.history_clear_dialog_confirm)) } },
+            dismissButton = { TextButton(onClick = { showCleanupDialog = false }) { Text(stringResource(R.string.history_clear_dialog_cancel)) } }
         )
     }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Upload-Verlauf") },
+                title = { Text(stringResource(R.string.history_screen_title)) },
                 actions = {
                     IconButton(onClick = { showCleanupDialog = true }) {
-                        Icon(Icons.Default.DeleteSweep, "Alte Einträge löschen")
+                        Icon(Icons.Default.DeleteSweep, stringResource(R.string.history_clear_icon_description))
                     }
                 }
             )
@@ -114,10 +116,10 @@ fun HistoryScreen(viewModel: HistoryViewModel = hiltViewModel()) {
 @Composable
 private fun StatsRow(stats: UploadStats) {
     Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-        StatCard(Modifier.weight(1f), stats.total.toString(),   "Gesamt",      MaterialTheme.colorScheme.primary)
-        StatCard(Modifier.weight(1f), stats.success.toString(), "Erfolgreich", Color(0xFF4CAF50))
-        StatCard(Modifier.weight(1f), stats.failed.toString(),  "Fehler",      Color(0xFFF44336))
-        if (stats.running > 0) StatCard(Modifier.weight(1f), stats.running.toString(), "Läuft", Color(0xFF2196F3))
+        StatCard(Modifier.weight(1f), stats.total.toString(),   stringResource(R.string.history_stats_total),   MaterialTheme.colorScheme.primary)
+        StatCard(Modifier.weight(1f), stats.success.toString(), stringResource(R.string.history_stats_success), Color(0xFF4CAF50))
+        StatCard(Modifier.weight(1f), stats.failed.toString(),  stringResource(R.string.history_stats_failed),  Color(0xFFF44336))
+        if (stats.running > 0) StatCard(Modifier.weight(1f), stats.running.toString(), stringResource(R.string.history_stats_running), Color(0xFF2196F3))
     }
 }
 
@@ -136,11 +138,11 @@ private fun SearchBar(query: String, onQueryChange: (String) -> Unit, onClear: (
     OutlinedTextField(
         value = query, onValueChange = onQueryChange,
         modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
-        placeholder = { Text("Dateiname suchen...") },
+        placeholder = { Text(stringResource(R.string.history_search_placeholder)) },
         leadingIcon = { Icon(Icons.Default.Search, null) },
         trailingIcon = {
             AnimatedVisibility(visible = query.isNotBlank()) {
-                IconButton(onClick = onClear) { Icon(Icons.Default.Clear, "Suche löschen") }
+                IconButton(onClick = onClear) { Icon(Icons.Default.Clear, stringResource(R.string.history_search_clear_description)) }
             }
         },
         singleLine = true, shape = RoundedCornerShape(12.dp)
@@ -155,7 +157,7 @@ private fun FilterChipRow(active: HistoryFilter, onSelect: (HistoryFilter) -> Un
             FilterChip(
                 selected = active == filter,
                 onClick  = { onSelect(filter) },
-                label    = { Text("${filter.label} (${counts[filter] ?: 0})") },
+                label    = { Text("${stringResource(filter.labelRes)} (${counts[filter] ?: 0})") },
                 leadingIcon = if (active == filter) { { Icon(Icons.Default.Check, null, Modifier.size(16.dp)) } } else null
             )
         }
@@ -180,7 +182,7 @@ private fun UploadCard(upload: UploadEntity) {
                 }
                 if (upload.status == UploadStatus.SUCCESS && upload.documentId != null && !upload.isDuplicate) {
                     Spacer(Modifier.height(4.dp))
-                    Text("Dokument #${upload.documentId}", style = MaterialTheme.typography.bodySmall, color = Color(0xFF4CAF50))
+                    Text(stringResource(R.string.history_document_id, upload.documentId), style = MaterialTheme.typography.bodySmall, color = Color(0xFF4CAF50))
                 }
                 if (upload.isDuplicate) {
                     Spacer(Modifier.height(6.dp))
@@ -195,8 +197,7 @@ private fun UploadCard(upload: UploadEntity) {
                     ) {
                         Icon(Icons.Default.Warning, null, Modifier.size(14.dp), tint = DuplicateColor)
                         Text(
-                            "Duplikat – Dokument #${upload.documentId} existiert bereits in Paperless. " +
-                            "Datei wurde nicht erneut importiert.",
+                            stringResource(R.string.history_duplicate_warning, upload.documentId ?: 0),
                             style = MaterialTheme.typography.bodySmall,
                             color = DuplicateColor
                         )
@@ -226,8 +227,8 @@ private fun EmptyState(hasFilter: Boolean) {
     Column(modifier = Modifier.fillMaxSize().padding(32.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
         Icon(if (hasFilter) Icons.Default.SearchOff else Icons.Default.CloudUpload, null, Modifier.size(64.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f))
         Spacer(Modifier.height(16.dp))
-        Text(if (hasFilter) "Keine Ergebnisse" else "Noch keine Uploads", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(if (hasFilter) stringResource(R.string.history_empty_filtered_title) else stringResource(R.string.history_empty_title), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Spacer(Modifier.height(6.dp))
-        Text(if (hasFilter) "Versuche einen anderen Filter." else "PDFs im überwachten Ordner werden hier aufgelistet.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f))
+        Text(if (hasFilter) stringResource(R.string.history_empty_filtered_subtitle) else stringResource(R.string.history_empty_subtitle), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f))
     }
 }

@@ -10,6 +10,7 @@ import kotlinx.coroutines.delay
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.toRequestBody
+import de.paperdrop.R
 import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -36,13 +37,13 @@ class PaperlessRepository @Inject constructor(
     suspend fun uploadPdf(fileUri: Uri): UploadResult {
         val settings = settingsRepository.getSnapshot()
         if (settings.paperlessUrl.isBlank() || settings.apiToken.isBlank())
-            return UploadResult.Error("URL oder Token nicht konfiguriert")
+            return UploadResult.Error(context.getString(R.string.error_url_or_token_not_configured))
 
         return try {
             val api      = apiClientProvider.getApi(settings.paperlessUrl)
             val fileName = resolveFileName(fileUri)
             val bytes    = context.contentResolver.openInputStream(fileUri)?.readBytes()
-                ?: return UploadResult.Error("Datei konnte nicht geöffnet werden")
+                ?: return UploadResult.Error(context.getString(R.string.error_file_open_failed))
 
             val body  = bytes.toRequestBody("application/pdf".toMediaType())
             val parts = buildList {
@@ -59,15 +60,15 @@ class PaperlessRepository @Inject constructor(
                     ?.trim()
                     ?.removeSurrounding("\"")
                     ?.takeIf { it.isNotBlank() }
-                    ?: return UploadResult.Error("Keine Task-ID erhalten")
+                    ?: return UploadResult.Error(context.getString(R.string.error_no_task_id))
                 UploadResult.Success(taskId = taskId, fileName = fileName)
             } else {
-                UploadResult.Error("Upload fehlgeschlagen: HTTP ${response.code()}")
+                UploadResult.Error(context.getString(R.string.error_upload_failed_http, response.code()))
             }
         } catch (e: IOException) {
-            UploadResult.Error("Netzwerkfehler: ${e.message}")
+            UploadResult.Error(context.getString(R.string.error_network, e.message ?: ""))
         } catch (e: Exception) {
-            UploadResult.Error("Fehler: ${e.message}")
+            UploadResult.Error(context.getString(R.string.error_general, e.message ?: ""))
         }
     }
 
@@ -78,10 +79,10 @@ class PaperlessRepository @Inject constructor(
         repeat(maxAttempts) { attempt ->
             delay(3000L * (attempt + 1))
             val response = api.getTaskStatus("Token ${settings.apiToken}", taskId)
-            if (!response.isSuccessful) return UploadResult.Error("Task-Abfrage fehlgeschlagen")
+            if (!response.isSuccessful) return UploadResult.Error(context.getString(R.string.error_task_query_failed))
 
             val task = response.body()?.firstOrNull()
-                ?: return UploadResult.Error("Task nicht gefunden")
+                ?: return UploadResult.Error(context.getString(R.string.error_task_not_found))
 
             when (task.status) {
                 "SUCCESS" -> {
@@ -92,11 +93,11 @@ class PaperlessRepository @Inject constructor(
                 "FAILURE" -> {
                     if (task.result != null && task.result.contains("duplicate", ignoreCase = true))
                         return UploadResult.Completed(parseDocumentId(task.result), task.fileName ?: "", isDuplicate = true)
-                    return UploadResult.Error("Paperless-Verarbeitung fehlgeschlagen")
+                    return UploadResult.Error(context.getString(R.string.error_paperless_processing_failed))
                 }
             }
         }
-        return UploadResult.Error("Timeout: Paperless hat nicht geantwortet")
+        return UploadResult.Error(context.getString(R.string.error_paperless_timeout))
     }
 
     private fun parseDocumentId(result: String?): Int {

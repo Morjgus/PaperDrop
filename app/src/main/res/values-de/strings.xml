@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">PaperDrop</string>
+
+    <!-- Navigation -->
+    <string name="nav_history">Verlauf</string>
+    <string name="nav_settings">Einstellungen</string>
+
+    <!-- Settings screen -->
+    <string name="settings_screen_title">Einstellungen</string>
+    <string name="settings_saved">Einstellungen gespeichert</string>
+    <string name="settings_section_connection">Paperless-ngx Verbindung</string>
+    <string name="settings_url_label">Server-URL</string>
+    <string name="settings_url_placeholder">https://paperless.example.com</string>
+    <string name="settings_token_label">API Token</string>
+    <string name="settings_section_folder">Überwachter Ordner</string>
+    <string name="settings_source_folder_label">Quellordner</string>
+    <string name="settings_section_after_upload">Nach dem Upload</string>
+    <string name="settings_section_labels">Labels</string>
+    <string name="settings_section_watching">Überwachung</string>
+    <string name="settings_save_button">Einstellungen speichern</string>
+    <string name="settings_test_connection_button">Verbindung testen</string>
+    <string name="settings_no_folder_selected">Kein Ordner gewählt</string>
+    <string name="settings_choose_folder_button">Wählen</string>
+    <string name="settings_after_upload_keep">Behalten</string>
+    <string name="settings_after_upload_delete">Löschen</string>
+    <string name="settings_after_upload_move">Verschieben</string>
+    <string name="settings_target_folder_label">Zielordner</string>
+    <string name="settings_load_labels_button">Labels laden</string>
+    <string name="settings_labels_selected_count">%1$d von %2$d gewählt</string>
+    <string name="settings_labels_config_required">Bitte zuerst URL und Token konfigurieren.</string>
+    <string name="settings_auto_watch_label">Automatisch überwachen</string>
+    <string name="settings_watching_active">Aktiv \u2014 prüft alle 15 Minuten</string>
+    <string name="settings_watching_inactive">Inaktiv</string>
+    <string name="settings_watching_config_required">Bitte zuerst URL, Token und Ordner konfigurieren.</string>
+
+    <!-- History screen -->
+    <string name="history_screen_title">Upload-Verlauf</string>
+    <string name="history_clear_icon_description">Alte Einträge löschen</string>
+    <string name="history_clear_dialog_title">Verlauf löschen</string>
+    <string name="history_clear_dialog_message">Alle Einträge werden aus dem Verlauf entfernt. Dokumente in Paperless bleiben erhalten.</string>
+    <string name="history_clear_dialog_confirm">Löschen</string>
+    <string name="history_clear_dialog_cancel">Abbrechen</string>
+    <string name="history_stats_total">Gesamt</string>
+    <string name="history_stats_success">Erfolgreich</string>
+    <string name="history_stats_failed">Fehler</string>
+    <string name="history_stats_running">Läuft</string>
+    <string name="history_search_placeholder">Dateiname suchen\u2026</string>
+    <string name="history_search_clear_description">Suche löschen</string>
+    <string name="history_filter_all">Alle</string>
+    <string name="history_filter_success">Erfolgreich</string>
+    <string name="history_filter_failed">Fehlgeschlagen</string>
+    <string name="history_filter_running">Läuft</string>
+    <string name="history_document_id">Dokument #%1$d</string>
+    <string name="history_duplicate_warning">Duplikat \u2013 Dokument #%1$d existiert bereits in Paperless. Datei wurde nicht erneut importiert.</string>
+    <string name="history_empty_filtered_title">Keine Ergebnisse</string>
+    <string name="history_empty_filtered_subtitle">Versuche einen anderen Filter.</string>
+    <string name="history_empty_title">Noch keine Uploads</string>
+    <string name="history_empty_subtitle">PDFs im überwachten Ordner werden hier aufgelistet.</string>
+
+    <!-- Errors -->
+    <string name="error_url_or_token_not_configured">URL oder Token nicht konfiguriert</string>
+    <string name="error_file_open_failed">Datei konnte nicht geöffnet werden</string>
+    <string name="error_no_task_id">Keine Task-ID erhalten</string>
+    <string name="error_upload_failed_http">Upload fehlgeschlagen: HTTP %1$d</string>
+    <string name="error_network">Netzwerkfehler: %1$s</string>
+    <string name="error_general">Fehler: %1$s</string>
+    <string name="error_task_query_failed">Task-Abfrage fehlgeschlagen</string>
+    <string name="error_task_not_found">Task nicht gefunden</string>
+    <string name="error_paperless_processing_failed">Paperless-Verarbeitung fehlgeschlagen</string>
+    <string name="error_paperless_timeout">Timeout: Paperless hat nicht geantwortet</string>
+    <string name="error_connection_unknown">Fehler</string>
+</resources>
