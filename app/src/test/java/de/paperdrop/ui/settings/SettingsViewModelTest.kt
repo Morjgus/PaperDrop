@@ -1,7 +1,9 @@
 package de.paperdrop.ui.settings
 
+import android.content.Context
 import androidx.work.WorkManager
 import de.paperdrop.MainDispatcherRule
+import de.paperdrop.R
 import de.paperdrop.data.api.PaperlessRepository
 import de.paperdrop.data.preferences.AfterUploadAction
 import de.paperdrop.data.preferences.AppSettings
@@ -26,6 +28,7 @@ class SettingsViewModelTest {
     private val settingsRepository = mockk<SettingsRepository>(relaxed = true)
     private val paperlessRepository = mockk<PaperlessRepository>()
     private val workManager = mockk<WorkManager>(relaxed = true)
+    private val context = mockk<Context>(relaxed = true)
 
     private lateinit var viewModel: SettingsViewModel
 
@@ -35,7 +38,8 @@ class SettingsViewModelTest {
         every { DirectoryPollingWorker.schedule(any()) } just Runs
         every { DirectoryPollingWorker.cancel(any()) } just Runs
         every { settingsRepository.settings } returns flowOf(AppSettings())
-        viewModel = SettingsViewModel(settingsRepository, paperlessRepository, workManager)
+        every { context.getString(R.string.error_connection_unknown) } returns "Error"
+        viewModel = SettingsViewModel(settingsRepository, paperlessRepository, workManager, context)
     }
 
     @After
@@ -49,7 +53,7 @@ class SettingsViewModelTest {
         every { settingsRepository.settings } returns flowOf(
             AppSettings(paperlessUrl = "http://x", apiToken = "tok")
         )
-        viewModel = SettingsViewModel(settingsRepository, paperlessRepository, workManager)
+        viewModel = SettingsViewModel(settingsRepository, paperlessRepository, workManager, context)
         advanceUntilIdle()
 
         assertEquals("http://x", viewModel.uiState.value.paperlessUrl)
@@ -140,7 +144,7 @@ class SettingsViewModelTest {
         advanceUntilIdle()
 
         val state = viewModel.uiState.value.connectionState as ConnectionState.Error
-        assertEquals("Fehler", state.message)
+        assertEquals("Error", state.message)
     }
 
     @Test
@@ -168,7 +172,7 @@ class SettingsViewModelTest {
         )
         every { settingsRepository.settings } returns settingsFlow
 
-        viewModel = SettingsViewModel(settingsRepository, paperlessRepository, workManager)
+        viewModel = SettingsViewModel(settingsRepository, paperlessRepository, workManager, context)
         advanceUntilIdle()
 
         // User edits URL and token without saving

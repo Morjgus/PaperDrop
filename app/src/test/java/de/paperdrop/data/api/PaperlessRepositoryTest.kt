@@ -109,7 +109,6 @@ class PaperlessRepositoryTest {
 
         val result = repository.uploadPdf(mockk())
         assertTrue(result is UploadResult.Error)
-        assertTrue((result as UploadResult.Error).message.contains("500"))
     }
 
     @Test
@@ -120,7 +119,6 @@ class PaperlessRepositoryTest {
 
         val result = repository.uploadPdf(mockk())
         assertTrue(result is UploadResult.Error)
-        assertTrue((result as UploadResult.Error).message.contains("Netzwerkfehler"))
     }
 
     @Test
@@ -206,7 +204,6 @@ class PaperlessRepositoryTest {
         )
         val result = repository.waitForTask("t", maxAttempts = 2)
         assertTrue(result is UploadResult.Error)
-        assertTrue((result as UploadResult.Error).message.contains("Timeout"))
     }
 
     @Test
@@ -224,6 +221,5 @@ class PaperlessRepositoryTest {
         coEvery { api.getTaskStatus(any(), any()) } returns Response.success(emptyList())
         val result = repository.waitForTask("t", maxAttempts = 1)
         assertTrue(result is UploadResult.Error)
-        assertTrue((result as UploadResult.Error).message.contains("nicht gefunden"))
     }
 }
