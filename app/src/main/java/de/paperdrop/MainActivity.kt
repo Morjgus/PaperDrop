@@ -33,14 +33,14 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             PaperDropTheme {
-                PaperDropApp()
+                AppContent()
             }
         }
     }
 }
 
 @Composable
-private fun PaperDropApp() {
+private fun AppContent() {
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
