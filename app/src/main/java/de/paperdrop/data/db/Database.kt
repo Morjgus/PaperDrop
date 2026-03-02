@@ -13,7 +13,8 @@ data class UploadEntity(
     val status: UploadStatus,
     val timestamp: Long,
     val errorMessage: String? = null,
-    val documentId: Int?      = null
+    val documentId: Int?      = null,
+    val isDuplicate: Boolean  = false
 )
 
 enum class UploadStatus { RUNNING, SUCCESS, FAILED }
@@ -29,8 +30,8 @@ interface UploadDao {
     @Query("UPDATE uploads SET status = :status, errorMessage = :error WHERE id = :id")
     suspend fun updateStatus(id: Long, status: UploadStatus, error: String? = null)
 
-    @Query("UPDATE uploads SET status = :status, documentId = :documentId WHERE id = :id")
-    suspend fun updateStatus(id: Long, status: UploadStatus, documentId: Int)
+    @Query("UPDATE uploads SET status = :status, documentId = :documentId, isDuplicate = :isDuplicate WHERE id = :id")
+    suspend fun updateStatus(id: Long, status: UploadStatus, documentId: Int, isDuplicate: Boolean = false)
 
     @Query("SELECT fileUri FROM uploads")
     suspend fun getAllUris(): List<String>
@@ -47,7 +48,7 @@ interface UploadDao {
 
 // ── Database ──────────────────────────────────────────────────────────────────
 
-@Database(entities = [UploadEntity::class], version = 1, exportSchema = false)
+@Database(entities = [UploadEntity::class], version = 2, exportSchema = false)
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun uploadDao(): UploadDao

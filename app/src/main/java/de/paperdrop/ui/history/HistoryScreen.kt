@@ -67,7 +67,7 @@ fun HistoryScreen(viewModel: HistoryViewModel = hiltViewModel()) {
                     loading         -> Box(Modifier.fillMaxSize(), Alignment.Center) { CircularProgressIndicator() }
                     filtered.isEmpty() -> EmptyState(uiState.activeFilter != HistoryFilter.ALL || uiState.searchQuery.isNotBlank())
                     else -> LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                        items(filtered, key = { it.id }) { UploadCard(it) }
+                        items(filtered, key = { it.id }) { upload -> UploadCard(upload) }
                     }
                 }
             }
@@ -126,12 +126,14 @@ private fun FilterChipRow(active: HistoryFilter, onSelect: (HistoryFilter) -> Un
     }
 }
 
+private val DuplicateColor = Color(0xFFFF9800)
+
 @Composable
 private fun UploadCard(upload: UploadEntity) {
     val dateFormat = remember { SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.GERMAN) }
     Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp), elevation = CardDefaults.cardElevation(1.dp)) {
         Row(modifier = Modifier.fillMaxWidth().padding(14.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            StatusIndicator(upload.status)
+            StatusIndicator(upload.status, upload.isDuplicate)
             Column(modifier = Modifier.weight(1f)) {
                 Text(upload.fileName, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 Spacer(Modifier.height(2.dp))
@@ -140,9 +142,29 @@ private fun UploadCard(upload: UploadEntity) {
                     Spacer(Modifier.height(4.dp))
                     Text(upload.errorMessage, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error, maxLines = 2, overflow = TextOverflow.Ellipsis)
                 }
-                if (upload.status == UploadStatus.SUCCESS && upload.documentId != null) {
+                if (upload.status == UploadStatus.SUCCESS && upload.documentId != null && !upload.isDuplicate) {
                     Spacer(Modifier.height(4.dp))
                     Text("Dokument #${upload.documentId}", style = MaterialTheme.typography.bodySmall, color = Color(0xFF4CAF50))
+                }
+                if (upload.isDuplicate) {
+                    Spacer(Modifier.height(6.dp))
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(DuplicateColor.copy(alpha = 0.1f))
+                            .padding(horizontal = 8.dp, vertical = 5.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Icon(Icons.Default.Warning, null, Modifier.size(14.dp), tint = DuplicateColor)
+                        Text(
+                            "Duplikat – Dokument #${upload.documentId} existiert bereits in Paperless. " +
+                            "Datei wurde nicht erneut importiert.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = DuplicateColor
+                        )
+                    }
                 }
             }
             if (upload.status == UploadStatus.RUNNING) CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp)
@@ -151,11 +173,12 @@ private fun UploadCard(upload: UploadEntity) {
 }
 
 @Composable
-private fun StatusIndicator(status: UploadStatus) {
-    val (color, icon) = when (status) {
-        UploadStatus.SUCCESS -> Color(0xFF4CAF50) to Icons.Default.CheckCircle
-        UploadStatus.FAILED  -> Color(0xFFF44336) to Icons.Default.Error
-        UploadStatus.RUNNING -> Color(0xFF2196F3) to Icons.Default.Sync
+private fun StatusIndicator(status: UploadStatus, isDuplicate: Boolean = false) {
+    val (color, icon) = when {
+        isDuplicate              -> DuplicateColor to Icons.Default.Warning
+        status == UploadStatus.SUCCESS -> Color(0xFF4CAF50) to Icons.Default.CheckCircle
+        status == UploadStatus.FAILED  -> Color(0xFFF44336) to Icons.Default.Error
+        else                           -> Color(0xFF2196F3) to Icons.Default.Sync
     }
     Box(modifier = Modifier.size(36.dp).clip(RoundedCornerShape(8.dp)).background(color.copy(alpha = 0.12f)), contentAlignment = Alignment.Center) {
         Icon(icon, status.name, tint = color, modifier = Modifier.size(20.dp))

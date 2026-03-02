@@ -146,13 +146,23 @@ class PaperlessRepositoryTest {
     }
 
     @Test
-    fun `waitForTask extracts document id from duplicate message`() = runTest {
+    fun `waitForTask extracts document id from duplicate message on SUCCESS`() = runTest {
         coEvery { settingsRepository.getSnapshot() } returns defaultSettings
         coEvery { api.getTaskStatus(any(), any()) } returns Response.success(
             listOf(TaskStatusResponse("t", "SUCCESS", "Not consuming file.pdf: It is a duplicate of file (#27).", "doc.pdf"))
         )
         val result = repository.waitForTask("t", maxAttempts = 1)
-        assertEquals(UploadResult.Completed(27, "doc.pdf"), result)
+        assertEquals(UploadResult.Completed(27, "doc.pdf", isDuplicate = true), result)
+    }
+
+    @Test
+    fun `waitForTask returns Completed with isDuplicate true on FAILURE with duplicate message`() = runTest {
+        coEvery { settingsRepository.getSnapshot() } returns defaultSettings
+        coEvery { api.getTaskStatus(any(), any()) } returns Response.success(
+            listOf(TaskStatusResponse("t", "FAILURE", "Not consuming file.pdf: It is a duplicate of file (#27).", "doc.pdf"))
+        )
+        val result = repository.waitForTask("t", maxAttempts = 1)
+        assertEquals(UploadResult.Completed(27, "doc.pdf", isDuplicate = true), result)
     }
 
     // ── waitForTask ─────────────────────────────────────────────────────────────

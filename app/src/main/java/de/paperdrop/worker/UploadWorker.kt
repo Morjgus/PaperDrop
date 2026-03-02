@@ -68,7 +68,15 @@ class UploadWorker @AssistedInject constructor(
 
         return when (finalResult) {
             is UploadResult.Completed -> {
-                uploadDao.updateStatus(entityId, UploadStatus.SUCCESS, finalResult.documentId)
+                if (finalResult.isDuplicate) {
+                    Log.w(
+                        "UploadWorker",
+                        "DUPLIKAT ERKANNT: \"${finalResult.fileName}\" ist bereits als Dokument " +
+                        "#${finalResult.documentId} in Paperless vorhanden. " +
+                        "Die Datei wurde nicht erneut importiert – Paperless hat den Upload abgelehnt."
+                    )
+                }
+                uploadDao.updateStatus(entityId, UploadStatus.SUCCESS, finalResult.documentId, finalResult.isDuplicate)
                 handleFileAfterUpload(fileUri)
                 Result.success()
             }

@@ -84,8 +84,16 @@ class PaperlessRepository @Inject constructor(
                 ?: return UploadResult.Error("Task nicht gefunden")
 
             when (task.status) {
-                "SUCCESS" -> return UploadResult.Completed(parseDocumentId(task.result), task.fileName ?: "")
-                "FAILURE" -> return UploadResult.Error("Paperless-Verarbeitung fehlgeschlagen")
+                "SUCCESS" -> {
+                    val isDuplicate = task.result != null &&
+                        task.result.contains("duplicate", ignoreCase = true)
+                    return UploadResult.Completed(parseDocumentId(task.result), task.fileName ?: "", isDuplicate)
+                }
+                "FAILURE" -> {
+                    if (task.result != null && task.result.contains("duplicate", ignoreCase = true))
+                        return UploadResult.Completed(parseDocumentId(task.result), task.fileName ?: "", isDuplicate = true)
+                    return UploadResult.Error("Paperless-Verarbeitung fehlgeschlagen")
+                }
             }
         }
         return UploadResult.Error("Timeout: Paperless hat nicht geantwortet")

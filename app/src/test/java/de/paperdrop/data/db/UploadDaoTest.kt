@@ -78,6 +78,18 @@ class UploadDaoTest {
         val uploads = dao.getAllUploads().first()
         assertEquals(UploadStatus.SUCCESS, uploads[0].status)
         assertEquals(99, uploads[0].documentId)
+        assertFalse(uploads[0].isDuplicate)
+    }
+
+    @Test
+    fun `updateStatus with isDuplicate true persists flag`() = runBlocking {
+        val id = dao.insert(entity())
+        dao.updateStatus(id, UploadStatus.SUCCESS, 42, isDuplicate = true)
+
+        val uploads = dao.getAllUploads().first()
+        assertEquals(UploadStatus.SUCCESS, uploads[0].status)
+        assertEquals(42, uploads[0].documentId)
+        assertTrue(uploads[0].isDuplicate)
     }
 
     @Test
