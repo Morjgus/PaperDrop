@@ -62,19 +62,32 @@ class SettingsViewModel @Inject constructor(
     fun onAfterUploadChange(a: AfterUploadAction) = _uiState.update { it.copy(afterUpload = a) }
 
     fun onFolderSelected(uri: Uri, context: Context) {
-        context.contentResolver.takePersistableUriPermission(
-            uri,
-            Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
-        )
+        takePersistablePermission(uri, context)
         _uiState.update { it.copy(watchFolderUri = uri.toString()) }
     }
 
     fun onMoveTargetSelected(uri: Uri, context: Context) {
-        context.contentResolver.takePersistableUriPermission(
-            uri,
-            Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
-        )
+        takePersistablePermission(uri, context)
         _uiState.update { it.copy(moveTargetUri = uri.toString()) }
+    }
+
+    private fun takePersistablePermission(uri: Uri, context: Context) {
+        val flags = Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+        try {
+            context.contentResolver.takePersistableUriPermission(uri, flags)
+        } catch (_: SecurityException) {
+            // Some providers only grant a subset of the requested flags.
+            // Fall back to read-only persistence; writes will still work for
+            // the current session via the originally granted URI permission.
+            try {
+                context.contentResolver.takePersistableUriPermission(
+                    uri, Intent.FLAG_GRANT_READ_URI_PERMISSION
+                )
+            } catch (_: SecurityException) {
+                // Permission could not be persisted at all — the URI is still
+                // usable for the current session via the activity's grant.
+            }
+        }
     }
 
     fun onLabelToggled(id: Int) {
