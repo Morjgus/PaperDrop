@@ -30,6 +30,7 @@
     <string name="settings_watching_inactive">Неактивен</string>
     <string name="settings_watching_config_required">Сначала настройте URL, токен и папку.</string>
     <string name="history_screen_title">История загрузок</string>
+    <string name="history_sync_icon_description">Синхронизировать сейчас</string>
     <string name="history_clear_icon_description">Удалить старые записи</string>
     <string name="history_clear_dialog_title">Очистить историю</string>
     <string name="history_clear_dialog_message">Все записи будут удалены из истории. Документы в Paperless сохраняются.</string>

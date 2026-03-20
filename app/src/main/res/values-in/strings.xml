@@ -30,6 +30,7 @@
     <string name="settings_watching_inactive">Tidak aktif</string>
     <string name="settings_watching_config_required">Harap konfigurasikan URL, token, dan folder terlebih dahulu.</string>
     <string name="history_screen_title">Riwayat unggahan</string>
+    <string name="history_sync_icon_description">Sinkronkan sekarang</string>
     <string name="history_clear_icon_description">Hapus entri lama</string>
     <string name="history_clear_dialog_title">Hapus riwayat</string>
     <string name="history_clear_dialog_message">Semua entri akan dihapus dari riwayat. Dokumen di Paperless tetap dipertahankan.</string>

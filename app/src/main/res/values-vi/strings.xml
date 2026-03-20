@@ -30,6 +30,7 @@
     <string name="settings_watching_inactive">Không hoạt động</string>
     <string name="settings_watching_config_required">Vui lòng cấu hình URL, token và thư mục trước.</string>
     <string name="history_screen_title">Lịch sử tải lên</string>
+    <string name="history_sync_icon_description">Đồng bộ ngay</string>
     <string name="history_clear_icon_description">Xóa các mục cũ</string>
     <string name="history_clear_dialog_title">Xóa lịch sử</string>
     <string name="history_clear_dialog_message">Tất cả các mục sẽ bị xóa khỏi lịch sử. Tài liệu trong Paperless được giữ nguyên.</string>

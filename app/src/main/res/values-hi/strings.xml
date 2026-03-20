@@ -30,6 +30,7 @@
     <string name="settings_watching_inactive">निष्क्रिय</string>
     <string name="settings_watching_config_required">पहले URL, टोकन और फ़ोल्डर कॉन्फ़िगर करें।</string>
     <string name="history_screen_title">अपलोड इतिहास</string>
+    <string name="history_sync_icon_description">अभी सिंक करें</string>
     <string name="history_clear_icon_description">पुरानी प्रविष्टियाँ हटाएं</string>
     <string name="history_clear_dialog_title">इतिहास साफ़ करें</string>
     <string name="history_clear_dialog_message">सभी प्रविष्टियाँ इतिहास से हटा दी जाएंगी। Paperless में दस्तावेज़ सुरक्षित रहेंगे।</string>

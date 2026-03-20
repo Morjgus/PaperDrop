@@ -30,6 +30,7 @@
     <string name="settings_watching_inactive">未活跃</string>
     <string name="settings_watching_config_required">请先配置 URL、令牌和文件夹。</string>
     <string name="history_screen_title">上传历史</string>
+    <string name="history_sync_icon_description">立即同步</string>
     <string name="history_clear_icon_description">清除旧条目</string>
     <string name="history_clear_dialog_title">清除历史记录</string>
     <string name="history_clear_dialog_message">所有条目将从历史记录中删除。Paperless 中的文档将被保留。</string>

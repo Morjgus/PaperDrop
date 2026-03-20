@@ -36,6 +36,7 @@
 
     <!-- History screen -->
     <string name="history_screen_title">Upload-Verlauf</string>
+    <string name="history_sync_icon_description">Jetzt synchronisieren</string>
     <string name="history_clear_icon_description">Alte Einträge löschen</string>
     <string name="history_clear_dialog_title">Verlauf löschen</string>
     <string name="history_clear_dialog_message">Alle Einträge werden aus dem Verlauf entfernt. Dokumente in Paperless bleiben erhalten.</string>

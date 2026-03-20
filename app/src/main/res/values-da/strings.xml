@@ -30,6 +30,7 @@
     <string name="settings_watching_inactive">Inaktiv</string>
     <string name="settings_watching_config_required">Konfigurer URL, token og mappe først.</string>
     <string name="history_screen_title">Upload-historik</string>
+    <string name="history_sync_icon_description">Synkroniser nu</string>
     <string name="history_clear_icon_description">Slet gamle poster</string>
     <string name="history_clear_dialog_title">Ryd historik</string>
     <string name="history_clear_dialog_message">Alle poster fjernes fra historikken. Dokumenter i Paperless bevares.</string>

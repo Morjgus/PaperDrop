@@ -30,6 +30,7 @@
     <string name="settings_watching_inactive">未活躍</string>
     <string name="settings_watching_config_required">請先設定 URL、權杖和資料夾。</string>
     <string name="history_screen_title">上傳歷史記錄</string>
+    <string name="history_sync_icon_description">立即同步</string>
     <string name="history_clear_icon_description">清除舊項目</string>
     <string name="history_clear_dialog_title">清除歷史記錄</string>
     <string name="history_clear_dialog_message">所有項目將從歷史記錄中移除。Paperless 中的文件將被保留。</string>

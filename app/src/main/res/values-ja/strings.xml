@@ -30,6 +30,7 @@
     <string name="settings_watching_inactive">無効</string>
     <string name="settings_watching_config_required">まず URL、トークン、フォルダーを設定してください。</string>
     <string name="history_screen_title">アップロード履歴</string>
+    <string name="history_sync_icon_description">今すぐ同期</string>
     <string name="history_clear_icon_description">古いエントリを削除</string>
     <string name="history_clear_dialog_title">履歴を消去</string>
     <string name="history_clear_dialog_message">すべてのエントリが履歴から削除されます。Paperless 内のドキュメントは保持されます。</string>

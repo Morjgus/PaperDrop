@@ -82,6 +82,9 @@ fun HistoryScreen(viewModel: HistoryViewModel = hiltViewModel()) {
             TopAppBar(
                 title = { Text(stringResource(R.string.history_screen_title)) },
                 actions = {
+                    IconButton(onClick = { viewModel.syncNow() }) {
+                        Icon(Icons.Default.Sync, stringResource(R.string.history_sync_icon_description))
+                    }
                     IconButton(onClick = { showCleanupDialog = true }) {
                         Icon(Icons.Default.DeleteSweep, stringResource(R.string.history_clear_icon_description))
                     }

@@ -30,6 +30,7 @@
     <string name="settings_watching_inactive">Inactivo</string>
     <string name="settings_watching_config_required">Configure primero la URL, el token y la carpeta.</string>
     <string name="history_screen_title">Historial de subidas</string>
+    <string name="history_sync_icon_description">Sincronizar ahora</string>
     <string name="history_clear_icon_description">Eliminar entradas antiguas</string>
     <string name="history_clear_dialog_title">Borrar historial</string>
     <string name="history_clear_dialog_message">Todas las entradas se eliminarán del historial. Los documentos en Paperless se conservan.</string>

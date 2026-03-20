@@ -30,6 +30,7 @@
     <string name="settings_watching_inactive">غير نشط</string>
     <string name="settings_watching_config_required">يرجى ضبط عنوان URL والرمز والمجلد أولاً.</string>
     <string name="history_screen_title">سجل الرفع</string>
+    <string name="history_sync_icon_description">المزامنة الآن</string>
     <string name="history_clear_icon_description">حذف الإدخالات القديمة</string>
     <string name="history_clear_dialog_title">مسح السجل</string>
     <string name="history_clear_dialog_message">ستتم إزالة جميع الإدخالات من السجل. تظل المستندات في Paperless محفوظة.</string>

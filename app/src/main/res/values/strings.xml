@@ -36,6 +36,7 @@
 
     <!-- History screen -->
     <string name="history_screen_title">Upload History</string>
+    <string name="history_sync_icon_description">Sync now</string>
     <string name="history_clear_icon_description">Delete old entries</string>
     <string name="history_clear_dialog_title">Clear history</string>
     <string name="history_clear_dialog_message">All entries will be removed from the history. Documents in Paperless are preserved.</string>

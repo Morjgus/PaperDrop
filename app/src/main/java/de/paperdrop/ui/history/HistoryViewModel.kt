@@ -3,11 +3,13 @@ package de.paperdrop.ui.history
 import androidx.annotation.StringRes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.work.WorkManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import de.paperdrop.R
 import de.paperdrop.data.db.UploadDao
 import de.paperdrop.data.db.UploadEntity
 import de.paperdrop.data.db.UploadStatus
+import de.paperdrop.worker.DirectoryPollingWorker
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -16,7 +18,10 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class HistoryViewModel @Inject constructor(private val uploadDao: UploadDao) : ViewModel() {
+class HistoryViewModel @Inject constructor(
+    private val uploadDao: UploadDao,
+    private val workManager: WorkManager
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HistoryUiState())
     val uiState: StateFlow<HistoryUiState> = _uiState.asStateFlow()
@@ -43,6 +48,8 @@ class HistoryViewModel @Inject constructor(private val uploadDao: UploadDao) : V
     fun onFilterChange(filter: HistoryFilter) = _uiState.update { it.copy(activeFilter = filter) }
     fun onSearchChange(query: String)         = _uiState.update { it.copy(searchQuery = query) }
     fun clearSearch()                         = _uiState.update { it.copy(searchQuery = "") }
+
+    fun syncNow() = DirectoryPollingWorker.scanNow(workManager)
 
     fun clearAll() {
         viewModelScope.launch { uploadDao.deleteAll() }

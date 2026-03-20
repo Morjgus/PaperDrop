@@ -2,11 +2,13 @@ package de.paperdrop.worker
 
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import androidx.documentfile.provider.DocumentFile
 import androidx.hilt.work.HiltWorker
 import androidx.work.*
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import de.paperdrop.data.api.PaperlessRepository
 import de.paperdrop.data.db.UploadDao
 import de.paperdrop.data.preferences.SettingsRepository
 import java.util.concurrent.TimeUnit
@@ -17,7 +19,8 @@ class DirectoryPollingWorker @AssistedInject constructor(
     @Assisted workerParams: WorkerParameters,
     private val settingsRepository: SettingsRepository,
     private val uploadDao: UploadDao,
-    private val workManager: WorkManager
+    private val workManager: WorkManager,
+    private val paperlessRepository: PaperlessRepository
 ) : CoroutineWorker(context, workerParams) {
 
     companion object {
@@ -60,6 +63,16 @@ class DirectoryPollingWorker @AssistedInject constructor(
 
         if (!settings.isWatchingEnabled || settings.watchFolderUri.isBlank())
             return Result.success()
+
+        if (settings.paperlessUrl.isBlank() || settings.apiToken.isBlank()) {
+            Log.w("DirectoryPollingWorker", "URL oder Token nicht konfiguriert, Zyklus übersprungen")
+            return Result.success()
+        }
+        val connectionResult = paperlessRepository.testConnection(settings.paperlessUrl, settings.apiToken)
+        if (connectionResult.isFailure) {
+            Log.w("DirectoryPollingWorker", "Server nicht erreichbar, Zyklus übersprungen: ${connectionResult.exceptionOrNull()?.message}")
+            return Result.success()
+        }
 
         val folder = DocumentFile.fromTreeUri(applicationContext, Uri.parse(settings.watchFolderUri))
             ?: return Result.failure(workDataOf("error" to "Ordner nicht erreichbar"))

@@ -30,6 +30,7 @@
     <string name="settings_watching_inactive">Neaktivní</string>
     <string name="settings_watching_config_required">Nejprve nakonfigurujte URL, token a složku.</string>
     <string name="history_screen_title">Historie nahrávání</string>
+    <string name="history_sync_icon_description">Synchronizovat nyní</string>
     <string name="history_clear_icon_description">Smazat staré záznamy</string>
     <string name="history_clear_dialog_title">Vymazat historii</string>
     <string name="history_clear_dialog_message">Všechny záznamy budou odstraněny z historie. Dokumenty v Paperless jsou zachovány.</string>

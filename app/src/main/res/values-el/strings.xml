@@ -30,6 +30,7 @@
     <string name="settings_watching_inactive">Ανενεργό</string>
     <string name="settings_watching_config_required">Παρακαλώ ρυθμίστε πρώτα URL, token και φάκελο.</string>
     <string name="history_screen_title">Ιστορικό αποστολών</string>
+    <string name="history_sync_icon_description">Συγχρονισμός τώρα</string>
     <string name="history_clear_icon_description">Διαγραφή παλιών καταχωρήσεων</string>
     <string name="history_clear_dialog_title">Εκκαθάριση ιστορικού</string>
     <string name="history_clear_dialog_message">Όλες οι καταχωρήσεις θα αφαιρεθούν από το ιστορικό. Τα έγγραφα στο Paperless διατηρούνται.</string>

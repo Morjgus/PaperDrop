@@ -30,6 +30,7 @@
     <string name="settings_watching_inactive">Inactief</string>
     <string name="settings_watching_config_required">Configureer eerst URL, token en map.</string>
     <string name="history_screen_title">Uploadgeschiedenis</string>
+    <string name="history_sync_icon_description">Nu synchroniseren</string>
     <string name="history_clear_icon_description">Oude vermeldingen verwijderen</string>
     <string name="history_clear_dialog_title">Geschiedenis wissen</string>
     <string name="history_clear_dialog_message">Alle vermeldingen worden uit de geschiedenis verwijderd. Documenten in Paperless blijven behouden.</string>

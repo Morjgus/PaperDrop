@@ -30,6 +30,7 @@
     <string name="settings_watching_inactive">ไม่ได้ใช้งาน</string>
     <string name="settings_watching_config_required">กรุณากำหนด URL โทเค็น และโฟลเดอร์ก่อน</string>
     <string name="history_screen_title">ประวัติการอัปโหลด</string>
+    <string name="history_sync_icon_description">ซิงค์ตอนนี้</string>
     <string name="history_clear_icon_description">ลบรายการเก่า</string>
     <string name="history_clear_dialog_title">ล้างประวัติ</string>
     <string name="history_clear_dialog_message">รายการทั้งหมดจะถูกลบออกจากประวัติ เอกสารใน Paperless จะยังคงอยู่</string>

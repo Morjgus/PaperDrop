@@ -30,6 +30,7 @@
     <string name="settings_watching_inactive">Nieaktywny</string>
     <string name="settings_watching_config_required">Najpierw skonfiguruj URL, token i folder.</string>
     <string name="history_screen_title">Historia przesłań</string>
+    <string name="history_sync_icon_description">Synchronizuj teraz</string>
     <string name="history_clear_icon_description">Usuń stare wpisy</string>
     <string name="history_clear_dialog_title">Wyczyść historię</string>
     <string name="history_clear_dialog_message">Wszystkie wpisy zostaną usunięte z historii. Dokumenty w Paperless są zachowane.</string>

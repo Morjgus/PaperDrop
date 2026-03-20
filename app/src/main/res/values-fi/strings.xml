@@ -30,6 +30,7 @@
     <string name="settings_watching_inactive">Ei aktiivinen</string>
     <string name="settings_watching_config_required">Määritä ensin URL, tunnus ja kansio.</string>
     <string name="history_screen_title">Lataushistoria</string>
+    <string name="history_sync_icon_description">Synkronoi nyt</string>
     <string name="history_clear_icon_description">Poista vanhat merkinnät</string>
     <string name="history_clear_dialog_title">Tyhjennä historia</string>
     <string name="history_clear_dialog_message">Kaikki merkinnät poistetaan historiasta. Paperless-dokumentit säilytetään.</string>

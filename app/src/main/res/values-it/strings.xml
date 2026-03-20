@@ -30,6 +30,7 @@
     <string name="settings_watching_inactive">Inattivo</string>
     <string name="settings_watching_config_required">Configura prima URL, token e cartella.</string>
     <string name="history_screen_title">Cronologia caricamenti</string>
+    <string name="history_sync_icon_description">Sincronizza ora</string>
     <string name="history_clear_icon_description">Elimina le voci vecchie</string>
     <string name="history_clear_dialog_title">Cancella cronologia</string>
     <string name="history_clear_dialog_message">Tutte le voci verranno rimosse dalla cronologia. I documenti in Paperless vengono conservati.</string>

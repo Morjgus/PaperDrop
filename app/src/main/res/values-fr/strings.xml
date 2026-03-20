@@ -30,6 +30,7 @@
     <string name="settings_watching_inactive">Inactif</string>
     <string name="settings_watching_config_required">Veuillez d\'abord configurer l\'URL, le jeton et le dossier.</string>
     <string name="history_screen_title">Historique des envois</string>
+    <string name="history_sync_icon_description">Synchroniser maintenant</string>
     <string name="history_clear_icon_description">Supprimer les anciennes entrées</string>
     <string name="history_clear_dialog_title">Effacer l\'historique</string>
     <string name="history_clear_dialog_message">Toutes les entrées seront supprimées de l\'historique. Les documents dans Paperless sont conservés.</string>
