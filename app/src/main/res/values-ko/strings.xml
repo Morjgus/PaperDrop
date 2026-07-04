@@ -33,7 +33,7 @@
     <string name="history_sync_icon_description">지금 동기화</string>
     <string name="history_clear_icon_description">오래된 항목 삭제</string>
     <string name="history_clear_dialog_title">기록 지우기</string>
-    <string name="history_clear_dialog_message">모든 항목이 기록에서 제거됩니다. Paperless의 문서는 유지됩니다.</string>
+    <string name="history_clear_dialog_message">모든 항목이 기록에서 제거됩니다. Paperless의 문서는 유지됩니다. 감시 폴더에 남아 있는 파일은 새 파일로 간주되어 다시 업로드됩니다.</string>
     <string name="history_clear_dialog_confirm">삭제</string>
     <string name="history_clear_dialog_cancel">취소</string>
     <string name="history_stats_total">전체</string>

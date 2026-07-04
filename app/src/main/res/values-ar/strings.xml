@@ -33,7 +33,7 @@
     <string name="history_sync_icon_description">المزامنة الآن</string>
     <string name="history_clear_icon_description">حذف الإدخالات القديمة</string>
     <string name="history_clear_dialog_title">مسح السجل</string>
-    <string name="history_clear_dialog_message">ستتم إزالة جميع الإدخالات من السجل. تظل المستندات في Paperless محفوظة.</string>
+    <string name="history_clear_dialog_message">ستتم إزالة جميع الإدخالات من السجل. تظل المستندات في Paperless محفوظة. الملفات الموجودة في المجلد المراقب ستُعتبر جديدة ويُعاد رفعها مرة أخرى.</string>
     <string name="history_clear_dialog_confirm">حذف</string>
     <string name="history_clear_dialog_cancel">إلغاء</string>
     <string name="history_stats_total">المجموع</string>

@@ -33,7 +33,7 @@
     <string name="history_sync_icon_description">Synchronizuj teraz</string>
     <string name="history_clear_icon_description">Usuń stare wpisy</string>
     <string name="history_clear_dialog_title">Wyczyść historię</string>
-    <string name="history_clear_dialog_message">Wszystkie wpisy zostaną usunięte z historii. Dokumenty w Paperless są zachowane.</string>
+    <string name="history_clear_dialog_message">Wszystkie wpisy zostaną usunięte z historii. Dokumenty w Paperless są zachowane. Pliki nadal znajdujące się w obserwowanym folderze zostaną potraktowane jako nowe i przesłane ponownie.</string>
     <string name="history_clear_dialog_confirm">Usuń</string>
     <string name="history_clear_dialog_cancel">Anuluj</string>
     <string name="history_stats_total">Łącznie</string>

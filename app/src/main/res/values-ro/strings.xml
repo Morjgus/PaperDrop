@@ -33,7 +33,7 @@
     <string name="history_sync_icon_description">Sincronizează acum</string>
     <string name="history_clear_icon_description">Ștergeți intrările vechi</string>
     <string name="history_clear_dialog_title">Ștergeți istoricul</string>
-    <string name="history_clear_dialog_message">Toate intrările vor fi eliminate din istoric. Documentele din Paperless sunt păstrate.</string>
+    <string name="history_clear_dialog_message">Toate intrările vor fi eliminate din istoric. Documentele din Paperless sunt păstrate. Fișierele care se află încă în folderul monitorizat vor fi considerate noi și încărcate din nou.</string>
     <string name="history_clear_dialog_confirm">Ștergeți</string>
     <string name="history_clear_dialog_cancel">Anulați</string>
     <string name="history_stats_total">Total</string>

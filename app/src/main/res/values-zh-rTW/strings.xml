@@ -33,7 +33,7 @@
     <string name="history_sync_icon_description">立即同步</string>
     <string name="history_clear_icon_description">清除舊項目</string>
     <string name="history_clear_dialog_title">清除歷史記錄</string>
-    <string name="history_clear_dialog_message">所有項目將從歷史記錄中移除。Paperless 中的文件將被保留。</string>
+    <string name="history_clear_dialog_message">所有項目將從歷史記錄中移除。Paperless 中的文件將被保留。監視資料夾中仍存在的檔案將被視為新檔案並再次上傳。</string>
     <string name="history_clear_dialog_confirm">刪除</string>
     <string name="history_clear_dialog_cancel">取消</string>
     <string name="history_stats_total">總計</string>

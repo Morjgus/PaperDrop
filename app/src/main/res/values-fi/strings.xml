@@ -33,7 +33,7 @@
     <string name="history_sync_icon_description">Synkronoi nyt</string>
     <string name="history_clear_icon_description">Poista vanhat merkinnät</string>
     <string name="history_clear_dialog_title">Tyhjennä historia</string>
-    <string name="history_clear_dialog_message">Kaikki merkinnät poistetaan historiasta. Paperless-dokumentit säilytetään.</string>
+    <string name="history_clear_dialog_message">Kaikki merkinnät poistetaan historiasta. Paperless-dokumentit säilytetään. Valvotussa kansiossa yhä olevat tiedostot tulkitaan uusiksi ja ladataan uudelleen.</string>
     <string name="history_clear_dialog_confirm">Poista</string>
     <string name="history_clear_dialog_cancel">Peruuta</string>
     <string name="history_stats_total">Yhteensä</string>

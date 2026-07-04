@@ -33,7 +33,7 @@
     <string name="history_sync_icon_description">Synchroniser maintenant</string>
     <string name="history_clear_icon_description">Supprimer les anciennes entrées</string>
     <string name="history_clear_dialog_title">Effacer l\'historique</string>
-    <string name="history_clear_dialog_message">Toutes les entrées seront supprimées de l\'historique. Les documents dans Paperless sont conservés.</string>
+    <string name="history_clear_dialog_message">Toutes les entrées seront supprimées de l\'historique. Les documents dans Paperless sont conservés. Les fichiers encore présents dans le dossier surveillé seront considérés comme nouveaux et téléversés à nouveau.</string>
     <string name="history_clear_dialog_confirm">Supprimer</string>
     <string name="history_clear_dialog_cancel">Annuler</string>
     <string name="history_stats_total">Total</string>

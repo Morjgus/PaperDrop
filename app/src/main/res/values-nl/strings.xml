@@ -33,7 +33,7 @@
     <string name="history_sync_icon_description">Nu synchroniseren</string>
     <string name="history_clear_icon_description">Oude vermeldingen verwijderen</string>
     <string name="history_clear_dialog_title">Geschiedenis wissen</string>
-    <string name="history_clear_dialog_message">Alle vermeldingen worden uit de geschiedenis verwijderd. Documenten in Paperless blijven behouden.</string>
+    <string name="history_clear_dialog_message">Alle vermeldingen worden uit de geschiedenis verwijderd. Documenten in Paperless blijven behouden. Bestanden die zich nog in de bewaakte map bevinden, worden als nieuw beschouwd en opnieuw geüpload.</string>
     <string name="history_clear_dialog_confirm">Verwijderen</string>
     <string name="history_clear_dialog_cancel">Annuleren</string>
     <string name="history_stats_total">Totaal</string>

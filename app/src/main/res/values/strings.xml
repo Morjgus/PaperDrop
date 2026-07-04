@@ -39,7 +39,7 @@
     <string name="history_sync_icon_description">Sync now</string>
     <string name="history_clear_icon_description">Delete old entries</string>
     <string name="history_clear_dialog_title">Clear history</string>
-    <string name="history_clear_dialog_message">All entries will be removed from the history. Documents in Paperless are preserved.</string>
+    <string name="history_clear_dialog_message">All entries will be removed from the history. Documents in Paperless are preserved. Files still in the watched folder will be treated as new and uploaded again.</string>
     <string name="history_clear_dialog_confirm">Delete</string>
     <string name="history_clear_dialog_cancel">Cancel</string>
     <string name="history_stats_total">Total</string>

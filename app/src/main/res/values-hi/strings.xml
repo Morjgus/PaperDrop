@@ -33,7 +33,7 @@
     <string name="history_sync_icon_description">अभी सिंक करें</string>
     <string name="history_clear_icon_description">पुरानी प्रविष्टियाँ हटाएं</string>
     <string name="history_clear_dialog_title">इतिहास साफ़ करें</string>
-    <string name="history_clear_dialog_message">सभी प्रविष्टियाँ इतिहास से हटा दी जाएंगी। Paperless में दस्तावेज़ सुरक्षित रहेंगे।</string>
+    <string name="history_clear_dialog_message">सभी प्रविष्टियाँ इतिहास से हटा दी जाएंगी। Paperless में दस्तावेज़ सुरक्षित रहेंगे। मॉनिटर किए जा रहे फ़ोल्डर में अभी भी मौजूद फ़ाइलों को नया माना जाएगा और उन्हें फिर से अपलोड किया जाएगा।</string>
     <string name="history_clear_dialog_confirm">हटाएं</string>
     <string name="history_clear_dialog_cancel">रद्द करें</string>
     <string name="history_stats_total">कुल</string>

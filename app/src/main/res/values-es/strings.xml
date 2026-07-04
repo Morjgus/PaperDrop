@@ -33,7 +33,7 @@
     <string name="history_sync_icon_description">Sincronizar ahora</string>
     <string name="history_clear_icon_description">Eliminar entradas antiguas</string>
     <string name="history_clear_dialog_title">Borrar historial</string>
-    <string name="history_clear_dialog_message">Todas las entradas se eliminarán del historial. Los documentos en Paperless se conservan.</string>
+    <string name="history_clear_dialog_message">Todas las entradas se eliminarán del historial. Los documentos en Paperless se conservan. Los archivos que aún estén en la carpeta vigilada se considerarán nuevos y se volverán a subir.</string>
     <string name="history_clear_dialog_confirm">Eliminar</string>
     <string name="history_clear_dialog_cancel">Cancelar</string>
     <string name="history_stats_total">Total</string>

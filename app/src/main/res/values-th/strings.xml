@@ -33,7 +33,7 @@
     <string name="history_sync_icon_description">ซิงค์ตอนนี้</string>
     <string name="history_clear_icon_description">ลบรายการเก่า</string>
     <string name="history_clear_dialog_title">ล้างประวัติ</string>
-    <string name="history_clear_dialog_message">รายการทั้งหมดจะถูกลบออกจากประวัติ เอกสารใน Paperless จะยังคงอยู่</string>
+    <string name="history_clear_dialog_message">รายการทั้งหมดจะถูกลบออกจากประวัติ เอกสารใน Paperless จะยังคงอยู่ ไฟล์ที่ยังอยู่ในโฟลเดอร์ที่ตรวจสอบจะถูกพิจารณาว่าเป็นไฟล์ใหม่และจะถูกอัปโหลดอีกครั้ง</string>
     <string name="history_clear_dialog_confirm">ลบ</string>
     <string name="history_clear_dialog_cancel">ยกเลิก</string>
     <string name="history_stats_total">ทั้งหมด</string>

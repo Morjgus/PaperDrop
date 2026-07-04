@@ -33,7 +33,7 @@
     <string name="history_sync_icon_description">Synkroniser nå</string>
     <string name="history_clear_icon_description">Slett gamle oppføringer</string>
     <string name="history_clear_dialog_title">Tøm historikk</string>
-    <string name="history_clear_dialog_message">Alle oppføringer fjernes fra historikken. Dokumenter i Paperless beholdes.</string>
+    <string name="history_clear_dialog_message">Alle oppføringer fjernes fra historikken. Dokumenter i Paperless beholdes. Filer som fortsatt ligger i den overvåkede mappen, vil bli behandlet som nye og lastet opp på nytt.</string>
     <string name="history_clear_dialog_confirm">Slett</string>
     <string name="history_clear_dialog_cancel">Avbryt</string>
     <string name="history_stats_total">Totalt</string>

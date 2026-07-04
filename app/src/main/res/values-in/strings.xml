@@ -33,7 +33,7 @@
     <string name="history_sync_icon_description">Sinkronkan sekarang</string>
     <string name="history_clear_icon_description">Hapus entri lama</string>
     <string name="history_clear_dialog_title">Hapus riwayat</string>
-    <string name="history_clear_dialog_message">Semua entri akan dihapus dari riwayat. Dokumen di Paperless tetap dipertahankan.</string>
+    <string name="history_clear_dialog_message">Semua entri akan dihapus dari riwayat. Dokumen di Paperless tetap dipertahankan. File yang masih ada di folder yang dipantau akan dianggap baru dan diunggah kembali.</string>
     <string name="history_clear_dialog_confirm">Hapus</string>
     <string name="history_clear_dialog_cancel">Batal</string>
     <string name="history_stats_total">Total</string>

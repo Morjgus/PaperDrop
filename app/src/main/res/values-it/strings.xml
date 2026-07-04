@@ -33,7 +33,7 @@
     <string name="history_sync_icon_description">Sincronizza ora</string>
     <string name="history_clear_icon_description">Elimina le voci vecchie</string>
     <string name="history_clear_dialog_title">Cancella cronologia</string>
-    <string name="history_clear_dialog_message">Tutte le voci verranno rimosse dalla cronologia. I documenti in Paperless vengono conservati.</string>
+    <string name="history_clear_dialog_message">Tutte le voci verranno rimosse dalla cronologia. I documenti in Paperless vengono conservati. I file ancora presenti nella cartella monitorata verranno considerati nuovi e caricati di nuovo.</string>
     <string name="history_clear_dialog_confirm">Elimina</string>
     <string name="history_clear_dialog_cancel">Annulla</string>
     <string name="history_stats_total">Totale</string>

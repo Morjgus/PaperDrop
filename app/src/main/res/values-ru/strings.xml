@@ -33,7 +33,7 @@
     <string name="history_sync_icon_description">Синхронизировать сейчас</string>
     <string name="history_clear_icon_description">Удалить старые записи</string>
     <string name="history_clear_dialog_title">Очистить историю</string>
-    <string name="history_clear_dialog_message">Все записи будут удалены из истории. Документы в Paperless сохраняются.</string>
+    <string name="history_clear_dialog_message">Все записи будут удалены из истории. Документы в Paperless сохраняются. Файлы, которые всё ещё находятся в отслеживаемой папке, будут считаться новыми и загружены повторно.</string>
     <string name="history_clear_dialog_confirm">Удалить</string>
     <string name="history_clear_dialog_cancel">Отмена</string>
     <string name="history_stats_total">Всего</string>

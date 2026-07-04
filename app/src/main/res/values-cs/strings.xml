@@ -33,7 +33,7 @@
     <string name="history_sync_icon_description">Synchronizovat nyní</string>
     <string name="history_clear_icon_description">Smazat staré záznamy</string>
     <string name="history_clear_dialog_title">Vymazat historii</string>
-    <string name="history_clear_dialog_message">Všechny záznamy budou odstraněny z historie. Dokumenty v Paperless jsou zachovány.</string>
+    <string name="history_clear_dialog_message">Všechny záznamy budou odstraněny z historie. Dokumenty v Paperless jsou zachovány. Soubory, které jsou stále ve sledované složce, budou považovány za nové a znovu nahrány.</string>
     <string name="history_clear_dialog_confirm">Smazat</string>
     <string name="history_clear_dialog_cancel">Zrušit</string>
     <string name="history_stats_total">Celkem</string>
