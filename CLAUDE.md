@@ -19,7 +19,7 @@ This is a standard Android project. Use Gradle wrapper:
 # Run lint
 ./gradlew lint
 
-# Run all tests (no unit tests currently exist)
+# Run all unit tests
 ./gradlew test
 ```
 
@@ -30,12 +30,12 @@ Single-module Android app (`de.paperdrop`) using MVVM + clean architecture:
 - **`PaperDropApp`** — `@HiltAndroidApp` entry point; manually provides WorkManager configuration with `HiltWorkerFactory` (required for `@HiltWorker` injection)
 - **`MainActivity`** — hosts `PaperlessNavGraph`, the single Compose navigation graph
 - **`data/api/`** — Retrofit-based Paperless-ngx REST client. `ApiClientProvider` lazily builds/caches the `PaperlessApi` instance keyed by base URL (recreated when URL changes). `PaperlessRepository` performs upload + async task polling (exponential back-off via repeated `delay` calls)
-- **`data/db/`** — Room database (`paperdrop.db`, version 1, `fallbackToDestructiveMigration`). Single table `uploads` with `UploadStatus` enum (RUNNING / SUCCESS / FAILED)
+- **`data/db/`** — Room database (`paperdrop.db`, version 3, explicit migrations plus `fallbackToDestructiveMigration` as last resort). Single table `uploads` with `UploadStatus` enum (RUNNING / SUCCESS / FAILED); also serves as the dedup index for folder polling
 - **`data/preferences/`** — DataStore-backed `SettingsRepository`; `AppSettings` data class holds all user config. `AfterUploadAction` enum controls post-upload file handling (KEEP / DELETE / MOVE)
 - **`di/AppModule`** — Hilt `SingletonComponent` providing `AppDatabase`, `UploadDao`, and `WorkManager`
 - **`domain/UploadResult`** — sealed class representing upload pipeline stages: `Success` (task enqueued), `Completed` (Paperless processed, document ID known), `Error`
 - **`worker/DirectoryPollingWorker`** — `@HiltWorker` periodic worker (15 min interval, network required). Scans SAF folder, filters PDFs not in the `uploads` table, enqueues one `UploadWorker` per new file using `ExistingWorkPolicy.KEEP`
-- **`worker/UploadWorker`** — `@HiltWorker` one-time worker. Inserts a RUNNING record, uploads via `PaperlessRepository`, polls task status, updates record, then handles file (keep/delete/move via SAF `DocumentFile` API). Retries up to 3 times with exponential backoff
+- **`worker/UploadWorker`** — `@HiltWorker` one-time worker. Reuses (or inserts) the RUNNING record for the file, uploads via `PaperlessRepository`, persists the Paperless task id on the record, polls task status, updates the record, then handles the file (keep/delete/move via SAF `DocumentFile` API). Retries up to 3 times with exponential backoff; a retry with a persisted task id resumes polling instead of re-uploading
 
 ## Key Patterns
 
