@@ -118,19 +118,28 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
-    fun saveSettings() {
+    private fun validateUrlOrSetError(): Boolean {
         val s = _uiState.value
         if (s.paperlessUrl.isNotBlank() && !s.paperlessUrl.startsWith("https://", ignoreCase = true)) {
             _uiState.update { it.copy(urlError = context.getString(R.string.error_url_https_required)) }
-            return
+            return false
         }
+        return true
+    }
+
+    private suspend fun persistSettings(s: SettingsUiState) {
+        settingsRepository.updateUrl(s.paperlessUrl)
+        settingsRepository.updateToken(s.apiToken)
+        settingsRepository.updateFolderUri(s.watchFolderUri)
+        settingsRepository.updateAfterUpload(s.afterUpload)
+        settingsRepository.updateMoveTargetUri(s.moveTargetUri)
+        settingsRepository.updateLabelIds(s.selectedLabelIds)
+    }
+
+    fun saveSettings() {
+        if (!validateUrlOrSetError()) return
         viewModelScope.launch {
-            settingsRepository.updateUrl(s.paperlessUrl)
-            settingsRepository.updateToken(s.apiToken)
-            settingsRepository.updateFolderUri(s.watchFolderUri)
-            settingsRepository.updateAfterUpload(s.afterUpload)
-            settingsRepository.updateMoveTargetUri(s.moveTargetUri)
-            settingsRepository.updateLabelIds(s.selectedLabelIds)
+            persistSettings(_uiState.value)
             _uiState.update { it.copy(savedFeedback = true) }
         }
     }
@@ -156,10 +165,18 @@ class SettingsViewModel @Inject constructor(
     }
 
     fun toggleWatching(enabled: Boolean) {
-        viewModelScope.launch {
-            settingsRepository.updateWatchingEnabled(enabled)
-            if (enabled) DirectoryPollingWorker.schedule(workManager)
-            else         DirectoryPollingWorker.cancel(workManager)
+        if (enabled) {
+            if (!validateUrlOrSetError()) return
+            viewModelScope.launch {
+                persistSettings(_uiState.value)
+                settingsRepository.updateWatchingEnabled(true)
+                DirectoryPollingWorker.schedule(workManager)
+            }
+        } else {
+            viewModelScope.launch {
+                settingsRepository.updateWatchingEnabled(false)
+                DirectoryPollingWorker.cancel(workManager)
+            }
         }
     }
 }

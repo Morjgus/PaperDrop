@@ -180,12 +180,45 @@ class SettingsViewModelTest {
     }
 
     @Test
-    fun `toggleWatching true enables watching and schedules worker`() = runTest {
+    fun `toggleWatching true enables watching, persists settings and schedules worker`() = runTest {
+        viewModel.onUrlChange("https://server")
+        viewModel.onTokenChange("mytoken")
+
         viewModel.toggleWatching(true)
         advanceUntilIdle()
 
+        coVerify { settingsRepository.updateUrl("https://server") }
+        coVerify { settingsRepository.updateToken("mytoken") }
+        coVerify { settingsRepository.updateFolderUri(any()) }
+        coVerify { settingsRepository.updateAfterUpload(any()) }
+        coVerify { settingsRepository.updateMoveTargetUri(any()) }
+        coVerify { settingsRepository.updateLabelIds(any()) }
         coVerify { settingsRepository.updateWatchingEnabled(true) }
         verify { DirectoryPollingWorker.schedule(workManager) }
+    }
+
+    @Test
+    fun `toggleWatching true with invalid URL does not persist or schedule`() = runTest {
+        viewModel.onUrlChange("http://server")
+
+        viewModel.toggleWatching(true)
+        advanceUntilIdle()
+
+        assertNotNull(viewModel.uiState.value.urlError)
+        assertFalse(viewModel.uiState.value.savedFeedback)
+        coVerify(exactly = 0) { settingsRepository.updateUrl(any()) }
+        coVerify(exactly = 0) { settingsRepository.updateWatchingEnabled(any()) }
+        verify(exactly = 0) { DirectoryPollingWorker.schedule(any()) }
+    }
+
+    @Test
+    fun `toggleWatching true does not trigger savedFeedback snackbar`() = runTest {
+        viewModel.onUrlChange("https://server")
+
+        viewModel.toggleWatching(true)
+        advanceUntilIdle()
+
+        assertFalse(viewModel.uiState.value.savedFeedback)
     }
 
     @Test
@@ -208,7 +241,7 @@ class SettingsViewModelTest {
         advanceUntilIdle()
 
         // User edits URL and token without saving
-        viewModel.onUrlChange("http://new")
+        viewModel.onUrlChange("https://new")
         viewModel.onTokenChange("new-token")
 
         // User toggles watching; simulate DataStore re-emitting after the write
@@ -217,7 +250,7 @@ class SettingsViewModelTest {
         advanceUntilIdle()
 
         // Unsaved edits must survive the settings flow re-emission
-        assertEquals("http://new", viewModel.uiState.value.paperlessUrl)
+        assertEquals("https://new", viewModel.uiState.value.paperlessUrl)
         assertEquals("new-token", viewModel.uiState.value.apiToken)
         assertTrue(viewModel.uiState.value.isWatchingEnabled)
     }
