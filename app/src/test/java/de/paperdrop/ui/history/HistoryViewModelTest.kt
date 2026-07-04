@@ -1,5 +1,6 @@
 package de.paperdrop.ui.history
 
+import androidx.work.WorkManager
 import de.paperdrop.MainDispatcherRule
 import de.paperdrop.data.db.UploadDao
 import de.paperdrop.data.db.UploadEntity
@@ -20,6 +21,7 @@ class HistoryViewModelTest {
     val mainDispatcherRule = MainDispatcherRule()
 
     private val uploadDao = mockk<UploadDao>()
+    private val workManager = mockk<WorkManager>(relaxed = true)
     private lateinit var viewModel: HistoryViewModel
 
     private fun entity(
@@ -31,7 +33,7 @@ class HistoryViewModelTest {
     @Before
     fun setUp() {
         every { uploadDao.getAllUploads() } returns flowOf(emptyList())
-        viewModel = HistoryViewModel(uploadDao)
+        viewModel = HistoryViewModel(uploadDao, workManager)
     }
 
     @After
@@ -40,7 +42,7 @@ class HistoryViewModelTest {
     @Test
     fun `initial state has isLoading true before dao emits`() {
         every { uploadDao.getAllUploads() } returns flowOf()
-        val freshVm = HistoryViewModel(uploadDao)
+        val freshVm = HistoryViewModel(uploadDao, workManager)
         assertTrue(freshVm.uiState.value.isLoading)
     }
 
@@ -48,7 +50,7 @@ class HistoryViewModelTest {
     fun `state is updated when dao flow emits`() = runTest {
         val uploads = listOf(entity(), entity(fileName = "b.pdf"))
         every { uploadDao.getAllUploads() } returns flowOf(uploads)
-        viewModel = HistoryViewModel(uploadDao)
+        viewModel = HistoryViewModel(uploadDao, workManager)
         advanceUntilIdle()
 
         assertEquals(2, viewModel.uiState.value.uploads.size)
@@ -64,7 +66,7 @@ class HistoryViewModelTest {
             entity(fileName = "d.pdf", status = UploadStatus.RUNNING)
         )
         every { uploadDao.getAllUploads() } returns flowOf(uploads)
-        viewModel = HistoryViewModel(uploadDao)
+        viewModel = HistoryViewModel(uploadDao, workManager)
         advanceUntilIdle()
 
         val stats = viewModel.uiState.value.stats

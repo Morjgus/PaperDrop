@@ -7,6 +7,7 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.work.*
 import androidx.work.ListenableWorker.Result
 import androidx.work.testing.TestListenableWorkerBuilder
+import de.paperdrop.data.api.PaperlessRepository
 import de.paperdrop.data.db.UploadDao
 import de.paperdrop.data.preferences.AppSettings
 import de.paperdrop.data.preferences.SettingsRepository
@@ -28,11 +29,20 @@ class DirectoryPollingWorkerTest {
     private val settingsRepository = mockk<SettingsRepository>()
     private val uploadDao = mockk<UploadDao>()
     private val workManager = mockk<WorkManager>(relaxed = true)
+    private val paperlessRepository = mockk<PaperlessRepository>()
+
+    private fun watchSettings(watchFolderUri: String = "content://folder/1") = AppSettings(
+        isWatchingEnabled = true,
+        watchFolderUri    = watchFolderUri,
+        paperlessUrl      = "https://paperless.example.com",
+        apiToken          = "token"
+    )
 
     @Before
     fun setUp() {
         context = ApplicationProvider.getApplicationContext()
         mockkStatic(DocumentFile::class)
+        coEvery { paperlessRepository.testConnection(any(), any()) } returns kotlin.Result.success(Unit)
     }
 
     @After
@@ -49,7 +59,7 @@ class DirectoryPollingWorkerTest {
                     workerClassName: String,
                     workerParameters: WorkerParameters
                 ): ListenableWorker = DirectoryPollingWorker(
-                    appContext, workerParameters, settingsRepository, uploadDao, workManager
+                    appContext, workerParameters, settingsRepository, uploadDao, workManager, paperlessRepository
                 )
             })
             .build()
@@ -69,10 +79,25 @@ class DirectoryPollingWorkerTest {
     }
 
     @Test
+    fun `doWork skips cycle when server is not configured`() = runBlocking {
+        coEvery { settingsRepository.getSnapshot() } returns watchSettings().copy(paperlessUrl = "", apiToken = "")
+
+        assertEquals(Result.success(), buildWorker().doWork())
+        verify(exactly = 0) { workManager.enqueueUniqueWork(any(), any(), any<OneTimeWorkRequest>()) }
+    }
+
+    @Test
+    fun `doWork skips cycle when server is not reachable`() = runBlocking {
+        coEvery { settingsRepository.getSnapshot() } returns watchSettings()
+        coEvery { paperlessRepository.testConnection(any(), any()) } returns kotlin.Result.failure(Exception("down"))
+
+        assertEquals(Result.success(), buildWorker().doWork())
+        verify(exactly = 0) { workManager.enqueueUniqueWork(any(), any(), any<OneTimeWorkRequest>()) }
+    }
+
+    @Test
     fun `doWork returns failure when folder is not accessible`() = runBlocking {
-        coEvery { settingsRepository.getSnapshot() } returns AppSettings(
-            isWatchingEnabled = true, watchFolderUri = "content://folder/1"
-        )
+        coEvery { settingsRepository.getSnapshot() } returns watchSettings()
         every { DocumentFile.fromTreeUri(any(), any()) } returns null
 
         assertEquals(Result.failure(workDataOf("error" to "Ordner nicht erreichbar")), buildWorker().doWork())
@@ -81,9 +106,7 @@ class DirectoryPollingWorkerTest {
     @Test
     fun `doWork returns success when folder contains no PDFs`() = runBlocking {
         val mockFolder = mockk<DocumentFile>()
-        coEvery { settingsRepository.getSnapshot() } returns AppSettings(
-            isWatchingEnabled = true, watchFolderUri = "content://folder/1"
-        )
+        coEvery { settingsRepository.getSnapshot() } returns watchSettings()
         every { DocumentFile.fromTreeUri(any(), any()) } returns mockFolder
         every { mockFolder.listFiles() } returns emptyArray()
 
@@ -96,9 +119,7 @@ class DirectoryPollingWorkerTest {
         val knownUri = "content://files/known.pdf"
         val mockFolder = mockk<DocumentFile>()
         val mockFile = mockk<DocumentFile>()
-        coEvery { settingsRepository.getSnapshot() } returns AppSettings(
-            isWatchingEnabled = true, watchFolderUri = "content://folder/1"
-        )
+        coEvery { settingsRepository.getSnapshot() } returns watchSettings()
         every { DocumentFile.fromTreeUri(any(), any()) } returns mockFolder
         every { mockFolder.listFiles() } returns arrayOf(mockFile)
         every { mockFile.isFile } returns true
@@ -116,9 +137,7 @@ class DirectoryPollingWorkerTest {
         val newUri = "content://files/new.pdf"
         val mockFolder = mockk<DocumentFile>()
         val mockFile = mockk<DocumentFile>()
-        coEvery { settingsRepository.getSnapshot() } returns AppSettings(
-            isWatchingEnabled = true, watchFolderUri = "content://folder/1"
-        )
+        coEvery { settingsRepository.getSnapshot() } returns watchSettings()
         every { DocumentFile.fromTreeUri(any(), any()) } returns mockFolder
         every { mockFolder.listFiles() } returns arrayOf(mockFile)
         every { mockFile.isFile } returns true
@@ -142,9 +161,7 @@ class DirectoryPollingWorkerTest {
                 every { it.uri } returns Uri.parse("content://files/file$i.pdf")
             }
         }
-        coEvery { settingsRepository.getSnapshot() } returns AppSettings(
-            isWatchingEnabled = true, watchFolderUri = "content://folder/1"
-        )
+        coEvery { settingsRepository.getSnapshot() } returns watchSettings()
         every { DocumentFile.fromTreeUri(any(), any()) } returns mockFolder
         every { mockFolder.listFiles() } returns files.toTypedArray()
         coEvery { uploadDao.getAllUris() } returns emptyList()
@@ -157,9 +174,7 @@ class DirectoryPollingWorkerTest {
     fun `doWork ignores non-PDF files`() = runBlocking {
         val mockFolder = mockk<DocumentFile>()
         val txtFile = mockk<DocumentFile>()
-        coEvery { settingsRepository.getSnapshot() } returns AppSettings(
-            isWatchingEnabled = true, watchFolderUri = "content://folder/1"
-        )
+        coEvery { settingsRepository.getSnapshot() } returns watchSettings()
         every { DocumentFile.fromTreeUri(any(), any()) } returns mockFolder
         every { mockFolder.listFiles() } returns arrayOf(txtFile)
         every { txtFile.isFile } returns true
@@ -174,9 +189,7 @@ class DirectoryPollingWorkerTest {
     fun `doWork ignores unreadable files`() = runBlocking {
         val mockFolder = mockk<DocumentFile>()
         val lockedFile = mockk<DocumentFile>()
-        coEvery { settingsRepository.getSnapshot() } returns AppSettings(
-            isWatchingEnabled = true, watchFolderUri = "content://folder/1"
-        )
+        coEvery { settingsRepository.getSnapshot() } returns watchSettings()
         every { DocumentFile.fromTreeUri(any(), any()) } returns mockFolder
         every { mockFolder.listFiles() } returns arrayOf(lockedFile)
         every { lockedFile.isFile } returns true
