@@ -1,20 +1,24 @@
 package de.paperdrop.worker
 
 import android.content.Context
+import android.database.ContentObserver
 import android.net.Uri
+import android.provider.DocumentsContract
 import android.util.Log
-import androidx.documentfile.provider.DocumentFile
 import androidx.work.WorkManager
 import dagger.hilt.android.qualifiers.ApplicationContext
-import de.paperdrop.data.db.UploadDao
 import de.paperdrop.data.preferences.SettingsRepository
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -22,20 +26,23 @@ import javax.inject.Singleton
 class ForegroundFolderWatcher @Inject constructor(
     @ApplicationContext private val context: Context,
     private val settingsRepository: SettingsRepository,
-    private val uploadDao: UploadDao,
     private val workManager: WorkManager
 ) {
     private val scope    = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private var watchJob: Job? = null
 
-    fun start() {
+    fun start(dispatcher: CoroutineDispatcher = Dispatchers.IO) {
         watchJob?.cancel()
-        watchJob = scope.launch {
+        watchJob = scope.launch(dispatcher) {
             Log.d(TAG, "Foreground folder watcher started")
-            while (isActive) {
-                checkForNewFiles()
-                delay(POLL_INTERVAL_MS)
-            }
+            settingsRepository.settings
+                .map { it.isWatchingEnabled to it.watchFolderUri }
+                .distinctUntilChanged()
+                .collectLatest { (isWatchingEnabled, watchFolderUri) ->
+                    if (isWatchingEnabled && watchFolderUri.isNotBlank()) {
+                        observeFolder(watchFolderUri)
+                    }
+                }
         }
     }
 
@@ -45,28 +52,40 @@ class ForegroundFolderWatcher @Inject constructor(
         Log.d(TAG, "Foreground folder watcher stopped")
     }
 
-    private suspend fun checkForNewFiles() {
-        val settings = settingsRepository.getSnapshot()
-        if (!settings.isWatchingEnabled || settings.watchFolderUri.isBlank()) return
+    private suspend fun observeFolder(watchFolderUri: String) {
+        val childrenUri = runCatching {
+            val treeUri = Uri.parse(watchFolderUri)
+            DocumentsContract.buildChildDocumentsUriUsingTree(treeUri, DocumentsContract.getTreeDocumentId(treeUri))
+        }.getOrElse {
+            Log.w(TAG, "Cannot observe non-tree URI $watchFolderUri: ${it.message}")
+            return
+        }
 
-        val folder = DocumentFile.fromTreeUri(context, Uri.parse(settings.watchFolderUri)) ?: return
-        val pdfUris = folder.listFiles()
-            .filter { it.isFile && it.name?.lowercase()?.endsWith(".pdf") == true && it.canRead() }
-            .map { it.uri.toString() }
-            .toSet()
+        val changes  = Channel<Unit>(Channel.CONFLATED)
+        val observer = object : ContentObserver(null) {
+            override fun onChange(selfChange: Boolean) {
+                changes.trySend(Unit)
+            }
+        }
 
-        if (pdfUris.isEmpty()) return
-
-        val knownUris = uploadDao.getAllUris().toSet()
-        val newFiles  = pdfUris - knownUris
-        if (newFiles.isNotEmpty()) {
-            Log.d(TAG, "Detected ${newFiles.size} new file(s), triggering scan")
+        context.contentResolver.registerContentObserver(childrenUri, true, observer)
+        try {
+            Log.d(TAG, "Observing $childrenUri for changes")
             DirectoryPollingWorker.scanNow(workManager)
+
+            for (change in changes) {
+                while (withTimeoutOrNull(DEBOUNCE_MS) { changes.receive() } != null) {
+                    // Keep draining the burst, each received change resets the debounce window.
+                }
+                DirectoryPollingWorker.scanNow(workManager)
+            }
+        } finally {
+            context.contentResolver.unregisterContentObserver(observer)
         }
     }
 
     companion object {
-        private const val TAG             = "ForegroundFolderWatcher"
-        private const val POLL_INTERVAL_MS = 3_000L
+        private const val TAG = "ForegroundFolderWatcher"
+        internal const val DEBOUNCE_MS = 500L
     }
 }

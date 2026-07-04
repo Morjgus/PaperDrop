@@ -50,7 +50,7 @@ class DirectoryPollingWorker @AssistedInject constructor(
         fun scanNow(workManager: WorkManager) {
             workManager.enqueueUniqueWork(
                 "foreground_scan",
-                ExistingWorkPolicy.KEEP,
+                ExistingWorkPolicy.APPEND_OR_REPLACE,
                 OneTimeWorkRequestBuilder<DirectoryPollingWorker>()
                     .addTag("polling")
                     .build()
