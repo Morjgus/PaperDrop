@@ -14,6 +14,7 @@ class ApiClientProvider @Inject constructor() {
     private var currentUrl: String    = ""
     private var _api: PaperlessApi?   = null
 
+    @Synchronized
     fun getApi(baseUrl: String): PaperlessApi {
         if (baseUrl != currentUrl || _api == null) {
             currentUrl = baseUrl
