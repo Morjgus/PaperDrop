@@ -1,5 +1,6 @@
 package de.paperdrop.data.api
 
+import de.paperdrop.BuildConfig
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -24,14 +25,18 @@ class ApiClientProvider @Inject constructor() {
     }
 
     private fun build(baseUrl: String): PaperlessApi {
-        val okHttp = OkHttpClient.Builder()
+        val okHttpBuilder = OkHttpClient.Builder()
             .connectTimeout(30, TimeUnit.SECONDS)
             .readTimeout(60,  TimeUnit.SECONDS)
             .writeTimeout(60, TimeUnit.SECONDS)
-            .addInterceptor(HttpLoggingInterceptor().apply {
+
+        if (BuildConfig.DEBUG) {
+            okHttpBuilder.addInterceptor(HttpLoggingInterceptor().apply {
                 level = HttpLoggingInterceptor.Level.BASIC
             })
-            .build()
+        }
+
+        val okHttp = okHttpBuilder.build()
 
         return Retrofit.Builder()
             .baseUrl(if (baseUrl.endsWith("/")) baseUrl else "$baseUrl/")
