@@ -128,12 +128,14 @@ class SettingsViewModel @Inject constructor(
     }
 
     private suspend fun persistSettings(s: SettingsUiState) {
-        settingsRepository.updateUrl(s.paperlessUrl)
-        settingsRepository.updateToken(s.apiToken)
-        settingsRepository.updateFolderUri(s.watchFolderUri)
-        settingsRepository.updateAfterUpload(s.afterUpload)
-        settingsRepository.updateMoveTargetUri(s.moveTargetUri)
-        settingsRepository.updateLabelIds(s.selectedLabelIds)
+        settingsRepository.updateSettings(
+            url = s.paperlessUrl,
+            token = s.apiToken,
+            folderUri = s.watchFolderUri,
+            afterUpload = s.afterUpload,
+            moveTargetUri = s.moveTargetUri,
+            labelIds = s.selectedLabelIds
+        )
     }
 
     fun saveSettings() {

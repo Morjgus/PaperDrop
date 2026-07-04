@@ -50,13 +50,23 @@ class SettingsRepository @Inject constructor(
             )
         }
 
-    suspend fun updateUrl(url: String)                  = context.dataStore.edit { it[KEY_URL]             = url.trimEnd('/') }
-    suspend fun updateToken(token: String)              = context.dataStore.edit { it[KEY_TOKEN]           = token }
-    suspend fun updateFolderUri(uri: String)            = context.dataStore.edit { it[KEY_FOLDER_URI]      = uri }
-    suspend fun updateAfterUpload(a: AfterUploadAction) = context.dataStore.edit { it[KEY_AFTER_UPLOAD]    = a.name }
-    suspend fun updateMoveTargetUri(uri: String)        = context.dataStore.edit { it[KEY_MOVE_TARGET_URI] = uri }
-    suspend fun updateWatchingEnabled(b: Boolean)       = context.dataStore.edit { it[KEY_WATCHING]        = b }
-    suspend fun updateLabelIds(ids: Set<Int>)           = context.dataStore.edit { it[KEY_LABEL_IDS]       = ids.joinToString(",") }
+    suspend fun updateWatchingEnabled(b: Boolean) = context.dataStore.edit { it[KEY_WATCHING] = b }
+
+    suspend fun updateSettings(
+        url: String,
+        token: String,
+        folderUri: String,
+        afterUpload: AfterUploadAction,
+        moveTargetUri: String,
+        labelIds: Set<Int>
+    ) = context.dataStore.edit { prefs ->
+        prefs[KEY_URL]             = url.trimEnd('/')
+        prefs[KEY_TOKEN]           = token
+        prefs[KEY_FOLDER_URI]      = folderUri
+        prefs[KEY_AFTER_UPLOAD]    = afterUpload.name
+        prefs[KEY_MOVE_TARGET_URI] = moveTargetUri
+        prefs[KEY_LABEL_IDS]       = labelIds.joinToString(",")
+    }
 
     suspend fun getSnapshot(): AppSettings = settings.first()
 }

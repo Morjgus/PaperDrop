@@ -88,11 +88,16 @@ class SettingsViewModelTest {
         viewModel.saveSettings()
         advanceUntilIdle()
 
-        coVerify { settingsRepository.updateUrl("https://server") }
-        coVerify { settingsRepository.updateToken("mytoken") }
-        coVerify { settingsRepository.updateFolderUri(any()) }
-        coVerify { settingsRepository.updateAfterUpload(any()) }
-        coVerify { settingsRepository.updateMoveTargetUri(any()) }
+        coVerify {
+            settingsRepository.updateSettings(
+                url = "https://server",
+                token = "mytoken",
+                folderUri = any(),
+                afterUpload = any(),
+                moveTargetUri = any(),
+                labelIds = any()
+            )
+        }
     }
 
     @Test
@@ -103,7 +108,7 @@ class SettingsViewModelTest {
 
         assertNotNull(viewModel.uiState.value.urlError)
         assertFalse(viewModel.uiState.value.savedFeedback)
-        coVerify(exactly = 0) { settingsRepository.updateUrl(any()) }
+        coVerify(exactly = 0) { settingsRepository.updateSettings(any(), any(), any(), any(), any(), any()) }
     }
 
     @Test
@@ -187,12 +192,16 @@ class SettingsViewModelTest {
         viewModel.toggleWatching(true)
         advanceUntilIdle()
 
-        coVerify { settingsRepository.updateUrl("https://server") }
-        coVerify { settingsRepository.updateToken("mytoken") }
-        coVerify { settingsRepository.updateFolderUri(any()) }
-        coVerify { settingsRepository.updateAfterUpload(any()) }
-        coVerify { settingsRepository.updateMoveTargetUri(any()) }
-        coVerify { settingsRepository.updateLabelIds(any()) }
+        coVerify {
+            settingsRepository.updateSettings(
+                url = "https://server",
+                token = "mytoken",
+                folderUri = any(),
+                afterUpload = any(),
+                moveTargetUri = any(),
+                labelIds = any()
+            )
+        }
         coVerify { settingsRepository.updateWatchingEnabled(true) }
         verify { DirectoryPollingWorker.schedule(workManager) }
     }
@@ -206,7 +215,7 @@ class SettingsViewModelTest {
 
         assertNotNull(viewModel.uiState.value.urlError)
         assertFalse(viewModel.uiState.value.savedFeedback)
-        coVerify(exactly = 0) { settingsRepository.updateUrl(any()) }
+        coVerify(exactly = 0) { settingsRepository.updateSettings(any(), any(), any(), any(), any(), any()) }
         coVerify(exactly = 0) { settingsRepository.updateWatchingEnabled(any()) }
         verify(exactly = 0) { DirectoryPollingWorker.schedule(any()) }
     }
