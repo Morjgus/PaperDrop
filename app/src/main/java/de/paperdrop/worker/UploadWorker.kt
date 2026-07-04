@@ -107,19 +107,36 @@ class UploadWorker @AssistedInject constructor(
 
     private fun moveFile(uri: Uri, targetUriString: String) {
         if (targetUriString.isBlank()) return
+        var targetFile: DocumentFile? = null
         try {
             val targetDir  = DocumentFile.fromTreeUri(applicationContext, Uri.parse(targetUriString)) ?: return
             val sourceFile = DocumentFile.fromSingleUri(applicationContext, uri) ?: return
-            val targetFile = targetDir.createFile("application/pdf", sourceFile.name ?: "document.pdf") ?: return
+            val newTargetFile = targetDir.createFile("application/pdf", sourceFile.name ?: "document.pdf") ?: return
+            targetFile = newTargetFile
 
-            applicationContext.contentResolver.openInputStream(uri)?.use { input ->
-                applicationContext.contentResolver.openOutputStream(targetFile.uri)?.use { output ->
-                    input.copyTo(output)
+            val input = applicationContext.contentResolver.openInputStream(uri)
+            if (input == null) {
+                Log.e("UploadWorker", "Verschieben fehlgeschlagen: InputStream konnte nicht geöffnet werden")
+                newTargetFile.delete()
+                return
+            }
+            input.use { inputStream ->
+                val output = applicationContext.contentResolver.openOutputStream(newTargetFile.uri)
+                if (output == null) {
+                    Log.e("UploadWorker", "Verschieben fehlgeschlagen: OutputStream konnte nicht geöffnet werden")
+                    newTargetFile.delete()
+                    return
                 }
+                output.use { inputStream.copyTo(it) }
             }
             sourceFile.delete()
         } catch (e: Exception) {
             Log.e("UploadWorker", "Verschieben fehlgeschlagen: ${e.message}")
+            try {
+                targetFile?.delete()
+            } catch (cleanupException: Exception) {
+                Log.e("UploadWorker", "Aufräumen fehlgeschlagen: ${cleanupException.message}")
+            }
         }
     }
 }

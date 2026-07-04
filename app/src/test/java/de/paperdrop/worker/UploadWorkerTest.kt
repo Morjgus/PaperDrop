@@ -1,5 +1,6 @@
 package de.paperdrop.worker
 
+import android.content.ContentResolver
 import android.content.Context
 import android.net.Uri
 import androidx.documentfile.provider.DocumentFile
@@ -25,6 +26,10 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
+import java.io.IOException
+import java.io.InputStream
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33])
@@ -207,5 +212,113 @@ class UploadWorkerTest {
         // Should not throw and should not access DocumentFile
         assertEquals(Result.success(), buildWorker().doWork())
         verify(exactly = 0) { DocumentFile.fromTreeUri(any(), any()) }
+    }
+
+    // ── moveFile stream-failure handling ────────────────────────────────────────
+
+    private fun buildMoveWorker(
+        moveContentResolver: ContentResolver,
+        sourceFile: DocumentFile,
+        targetFile: DocumentFile
+    ): UploadWorker {
+        val moveContext = mockk<Context>(relaxed = true)
+        val targetDir = mockk<DocumentFile>(relaxed = true)
+        every { moveContext.contentResolver } returns moveContentResolver
+        every { DocumentFile.fromSingleUri(moveContext, any()) } returns sourceFile
+        every { DocumentFile.fromTreeUri(moveContext, any()) } returns targetDir
+        every { targetDir.createFile(any(), any()) } returns targetFile
+
+        coEvery { uploadDao.insert(any()) } returns 1L
+        coEvery { paperlessRepository.uploadPdf(any()) } returns UploadResult.Success("t", "f.pdf")
+        coEvery { paperlessRepository.waitForTask(any()) } returns UploadResult.Completed(1, "f.pdf")
+        coEvery { settingsRepository.getSnapshot() } returns defaultSettings.copy(
+            afterUpload = AfterUploadAction.MOVE,
+            moveTargetUri = "content://test/target"
+        )
+
+        return TestListenableWorkerBuilder<UploadWorker>(
+            moveContext,
+            workDataOf(UploadWorker.KEY_FILE_URI to "content://test/file.pdf", UploadWorker.KEY_FILE_NAME to "file.pdf")
+        )
+            .setWorkerFactory(object : WorkerFactory() {
+                override fun createWorker(a: Context, b: String, p: WorkerParameters): ListenableWorker =
+                    UploadWorker(a, p, paperlessRepository, settingsRepository, uploadDao)
+            })
+            .build()
+    }
+
+    @Test
+    fun `moveFile does not delete source when input stream is null`() = runBlocking {
+        val sourceFile = mockk<DocumentFile>(relaxed = true)
+        val targetFile = mockk<DocumentFile>(relaxed = true)
+        every { sourceFile.name } returns "file.pdf"
+        every { targetFile.uri } returns Uri.parse("content://test/target/file.pdf")
+
+        val moveContentResolver = mockk<ContentResolver>(relaxed = true)
+        every { moveContentResolver.openInputStream(any()) } returns null
+
+        val worker = buildMoveWorker(moveContentResolver, sourceFile, targetFile)
+        worker.doWork()
+
+        verify(exactly = 0) { sourceFile.delete() }
+        verify(exactly = 0) { moveContentResolver.openOutputStream(any()) }
+        verify { targetFile.delete() }
+    }
+
+    @Test
+    fun `moveFile does not delete source when output stream is null`() = runBlocking {
+        val sourceFile = mockk<DocumentFile>(relaxed = true)
+        val targetFile = mockk<DocumentFile>(relaxed = true)
+        every { sourceFile.name } returns "file.pdf"
+        every { targetFile.uri } returns Uri.parse("content://test/target/file.pdf")
+
+        val moveContentResolver = mockk<ContentResolver>(relaxed = true)
+        every { moveContentResolver.openInputStream(any()) } returns ByteArrayInputStream(byteArrayOf(1, 2, 3))
+        every { moveContentResolver.openOutputStream(any()) } returns null
+
+        val worker = buildMoveWorker(moveContentResolver, sourceFile, targetFile)
+        worker.doWork()
+
+        verify(exactly = 0) { sourceFile.delete() }
+        verify { targetFile.delete() }
+    }
+
+    @Test
+    fun `moveFile does not delete source and cleans up target when copy throws`() = runBlocking {
+        val sourceFile = mockk<DocumentFile>(relaxed = true)
+        val targetFile = mockk<DocumentFile>(relaxed = true)
+        every { sourceFile.name } returns "file.pdf"
+        every { targetFile.uri } returns Uri.parse("content://test/target/file.pdf")
+
+        val throwingInputStream = object : InputStream() {
+            override fun read(): Int = throw IOException("boom")
+        }
+        val moveContentResolver = mockk<ContentResolver>(relaxed = true)
+        every { moveContentResolver.openInputStream(any()) } returns throwingInputStream
+        every { moveContentResolver.openOutputStream(any()) } returns ByteArrayOutputStream()
+
+        val worker = buildMoveWorker(moveContentResolver, sourceFile, targetFile)
+        worker.doWork()
+
+        verify(exactly = 0) { sourceFile.delete() }
+        verify { targetFile.delete() }
+    }
+
+    @Test
+    fun `moveFile deletes source after successful copy`() = runBlocking {
+        val sourceFile = mockk<DocumentFile>(relaxed = true)
+        val targetFile = mockk<DocumentFile>(relaxed = true)
+        every { sourceFile.name } returns "file.pdf"
+        every { targetFile.uri } returns Uri.parse("content://test/target/file.pdf")
+
+        val moveContentResolver = mockk<ContentResolver>(relaxed = true)
+        every { moveContentResolver.openInputStream(any()) } returns ByteArrayInputStream(byteArrayOf(1, 2, 3))
+        every { moveContentResolver.openOutputStream(any()) } returns ByteArrayOutputStream()
+
+        val worker = buildMoveWorker(moveContentResolver, sourceFile, targetFile)
+        worker.doWork()
+
+        verify { sourceFile.delete() }
+        verify(exactly = 0) { targetFile.delete() }
     }
 }
