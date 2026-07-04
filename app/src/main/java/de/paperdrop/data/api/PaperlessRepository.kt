@@ -9,7 +9,9 @@ import de.paperdrop.domain.UploadResult
 import kotlinx.coroutines.delay
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
-import okhttp3.RequestBody.Companion.toRequestBody
+import okhttp3.RequestBody
+import okio.BufferedSink
+import okio.source
 import de.paperdrop.R
 import java.io.IOException
 import javax.inject.Inject
@@ -42,10 +44,13 @@ class PaperlessRepository @Inject constructor(
         return try {
             val api      = apiClientProvider.getApi(settings.paperlessUrl)
             val fileName = resolveFileName(fileUri)
-            val bytes    = context.contentResolver.openInputStream(fileUri)?.readBytes()
+            // Fail fast if the file can't be opened; the upload itself streams the
+            // content instead of buffering the whole PDF in memory.
+            val probe = context.contentResolver.openInputStream(fileUri)
                 ?: return UploadResult.Error(context.getString(R.string.error_file_open_failed))
+            probe.close()
 
-            val body  = bytes.toRequestBody("application/pdf".toMediaType())
+            val body  = pdfRequestBody(fileUri)
             val parts = buildList {
                 add(MultipartBody.Part.createFormData("document", fileName, body))
                 settings.selectedLabelIds.forEach { id ->
@@ -108,6 +113,29 @@ class PaperlessRepository @Inject constructor(
         // "It is a duplicate of SomeName (#27)."
         Regex("""\(#(\d+)\)""").find(result)?.groupValues?.get(1)?.toIntOrNull()?.let { return it }
         return -1
+    }
+
+    // Streams the content on write instead of buffering it; each writeTo opens a
+    // fresh stream, so the body stays repeatable for OkHttp retries.
+    private fun pdfRequestBody(uri: Uri): RequestBody {
+        val size = resolveFileSize(uri)
+        return object : RequestBody() {
+            override fun contentType() = "application/pdf".toMediaType()
+            override fun contentLength() = size
+            override fun writeTo(sink: BufferedSink) {
+                val input = context.contentResolver.openInputStream(uri)
+                    ?: throw IOException("Could not open input stream for $uri")
+                input.source().use { sink.writeAll(it) }
+            }
+        }
+    }
+
+    private fun resolveFileSize(uri: Uri): Long {
+        context.contentResolver.query(uri, null, null, null, null)?.use { cursor ->
+            val idx = cursor.getColumnIndex(OpenableColumns.SIZE)
+            if (cursor.moveToFirst() && idx >= 0 && !cursor.isNull(idx)) return cursor.getLong(idx)
+        }
+        return -1L
     }
 
     private fun resolveFileName(uri: Uri): String {

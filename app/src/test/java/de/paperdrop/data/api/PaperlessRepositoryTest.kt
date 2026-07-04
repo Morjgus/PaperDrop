@@ -8,7 +8,9 @@ import de.paperdrop.domain.UploadResult
 import io.mockk.*
 import kotlinx.coroutines.test.runTest
 import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.MultipartBody
 import okhttp3.ResponseBody.Companion.toResponseBody
+import okio.Buffer
 import org.junit.After
 import org.junit.Assert.*
 import org.junit.Before
@@ -98,6 +100,27 @@ class PaperlessRepositoryTest {
         val result = repository.uploadPdf(mockk())
         assertTrue(result is UploadResult.Success)
         assertEquals("task-123", (result as UploadResult.Success).taskId)
+    }
+
+    @Test
+    fun `uploadPdf streams file content into the request body`() = runTest {
+        coEvery { settingsRepository.getSnapshot() } returns defaultSettings
+        // Fresh stream per call: uploadPdf probes once, then the body re-opens on write
+        every { mockContentResolver.openInputStream(any()) } answers { ByteArrayInputStream(byteArrayOf(1, 2, 3)) }
+        val partsSlot = slot<List<MultipartBody.Part>>()
+        coEvery { api.uploadDocument(any(), capture(partsSlot)) } returns
+            Response.success("\"task-123\"".toResponseBody("text/plain".toMediaType()))
+
+        repository.uploadPdf(mockk())
+
+        val documentBody = partsSlot.captured.first().body
+        val buffer = Buffer()
+        documentBody.writeTo(buffer)
+        assertArrayEquals(byteArrayOf(1, 2, 3), buffer.readByteArray())
+        // Body must be repeatable: writing again re-opens the stream
+        val secondBuffer = Buffer()
+        documentBody.writeTo(secondBuffer)
+        assertArrayEquals(byteArrayOf(1, 2, 3), secondBuffer.readByteArray())
     }
 
     @Test
