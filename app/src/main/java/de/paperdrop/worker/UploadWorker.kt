@@ -82,9 +82,7 @@ class UploadWorker @AssistedInject constructor(
                 if (finalResult.isDuplicate) {
                     Log.w(
                         "UploadWorker",
-                        "DUPLIKAT ERKANNT: \"${finalResult.fileName}\" ist bereits als Dokument " +
-                        "#${finalResult.documentId} in Paperless vorhanden. " +
-                        "Die Datei wurde nicht erneut importiert – Paperless hat den Upload abgelehnt."
+                        "Duplicate detected: \"${finalResult.fileName}\" already exists as document #${finalResult.documentId} in Paperless."
                     )
                 }
                 uploadDao.updateStatus(entityId, UploadStatus.SUCCESS, finalResult.documentId, finalResult.isDuplicate)
@@ -119,7 +117,7 @@ class UploadWorker @AssistedInject constructor(
         try {
             DocumentFile.fromSingleUri(applicationContext, uri)?.delete()
         } catch (e: Exception) {
-            Log.e("UploadWorker", "Löschen fehlgeschlagen: ${e.message}")
+            Log.e("UploadWorker", "Delete failed: ${e.message}")
         }
     }
 
@@ -134,14 +132,14 @@ class UploadWorker @AssistedInject constructor(
 
             val input = applicationContext.contentResolver.openInputStream(uri)
             if (input == null) {
-                Log.e("UploadWorker", "Verschieben fehlgeschlagen: InputStream konnte nicht geöffnet werden")
+                Log.e("UploadWorker", "Move failed: could not open input stream")
                 newTargetFile.delete()
                 return
             }
             input.use { inputStream ->
                 val output = applicationContext.contentResolver.openOutputStream(newTargetFile.uri)
                 if (output == null) {
-                    Log.e("UploadWorker", "Verschieben fehlgeschlagen: OutputStream konnte nicht geöffnet werden")
+                    Log.e("UploadWorker", "Move failed: could not open output stream")
                     newTargetFile.delete()
                     return
                 }
@@ -149,11 +147,11 @@ class UploadWorker @AssistedInject constructor(
             }
             sourceFile.delete()
         } catch (e: Exception) {
-            Log.e("UploadWorker", "Verschieben fehlgeschlagen: ${e.message}")
+            Log.e("UploadWorker", "Move failed: ${e.message}")
             try {
                 targetFile?.delete()
             } catch (cleanupException: Exception) {
-                Log.e("UploadWorker", "Aufräumen fehlgeschlagen: ${cleanupException.message}")
+                Log.e("UploadWorker", "Cleanup failed: ${cleanupException.message}")
             }
         }
     }

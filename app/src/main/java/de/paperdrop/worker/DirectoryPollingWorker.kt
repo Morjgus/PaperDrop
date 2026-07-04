@@ -65,17 +65,17 @@ class DirectoryPollingWorker @AssistedInject constructor(
             return Result.success()
 
         if (settings.paperlessUrl.isBlank() || settings.apiToken.isBlank()) {
-            Log.w("DirectoryPollingWorker", "URL oder Token nicht konfiguriert, Zyklus übersprungen")
+            Log.w("DirectoryPollingWorker", "URL or token not configured, skipping cycle")
             return Result.success()
         }
         val connectionResult = paperlessRepository.testConnection(settings.paperlessUrl, settings.apiToken)
         if (connectionResult.isFailure) {
-            Log.w("DirectoryPollingWorker", "Server nicht erreichbar, Zyklus übersprungen: ${connectionResult.exceptionOrNull()?.message}")
+            Log.w("DirectoryPollingWorker", "Server unreachable, skipping cycle: ${connectionResult.exceptionOrNull()?.message}")
             return Result.success()
         }
 
         val folder = DocumentFile.fromTreeUri(applicationContext, Uri.parse(settings.watchFolderUri))
-            ?: return Result.failure(workDataOf("error" to "Ordner nicht erreichbar"))
+            ?: return Result.failure(workDataOf("error" to "Folder not accessible"))
 
         val pdfFiles = folder.listFiles().filter { file ->
             file.isFile && file.name?.lowercase()?.endsWith(".pdf") == true && file.canRead()

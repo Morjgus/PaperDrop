@@ -100,7 +100,7 @@ class DirectoryPollingWorkerTest {
         coEvery { settingsRepository.getSnapshot() } returns watchSettings()
         every { DocumentFile.fromTreeUri(any(), any()) } returns null
 
-        assertEquals(Result.failure(workDataOf("error" to "Ordner nicht erreichbar")), buildWorker().doWork())
+        assertEquals(Result.failure(workDataOf("error" to "Folder not accessible")), buildWorker().doWork())
     }
 
     @Test
