@@ -30,7 +30,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import de.paperdrop.R
 import de.paperdrop.data.db.UploadEntity
 import de.paperdrop.data.db.UploadStatus
-import java.text.SimpleDateFormat
+import java.text.DateFormat
 import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -171,7 +171,7 @@ private val DuplicateColor = Color(0xFFFF9800)
 
 @Composable
 private fun UploadCard(upload: UploadEntity) {
-    val dateFormat = remember { SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.GERMAN) }
+    val dateFormat = remember { DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT) }
     Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp), elevation = CardDefaults.cardElevation(1.dp)) {
         Row(modifier = Modifier.fillMaxWidth().padding(14.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             StatusIndicator(upload.status, upload.isDuplicate)
