@@ -30,10 +30,19 @@ class PaperlessRepository @Inject constructor(
     }
 
     suspend fun fetchLabels(url: String, token: String): Result<List<PaperlessLabel>> = runCatching {
-        val response = apiClientProvider.getApi(url).getTags("Token $token")
-        if (!response.isSuccessful)
-            throw Exception("HTTP ${response.code()}: ${response.message()}")
-        response.body()?.results ?: emptyList()
+        val api = apiClientProvider.getApi(url)
+        val labels = mutableListOf<PaperlessLabel>()
+        var page = 1
+        while (true) {
+            val response = api.getTags("Token $token", page = page)
+            if (!response.isSuccessful)
+                throw Exception("HTTP ${response.code()}: ${response.message()}")
+            val body = response.body()
+            labels.addAll(body?.results ?: emptyList())
+            if (body?.next == null || page >= MAX_TAG_PAGES) break
+            page++
+        }
+        labels
     }
 
     suspend fun uploadPdf(fileUri: Uri): UploadResult {
@@ -145,5 +154,10 @@ class PaperlessRepository @Inject constructor(
             if (cursor.moveToFirst() && idx >= 0) name = cursor.getString(idx)
         }
         return name
+    }
+
+    private companion object {
+        // Hard cap so a misbehaving server can't make fetchLabels loop forever.
+        const val MAX_TAG_PAGES = 20
     }
 }

@@ -66,6 +66,51 @@ class PaperlessRepositoryTest {
         assertTrue(repository.testConnection("http://test.local", "tok").isFailure)
     }
 
+    // ── fetchLabels ─────────────────────────────────────────────────────────────
+
+    @Test
+    fun `fetchLabels returns single page when next is null`() = runTest {
+        coEvery { api.getTags(any(), any(), 1) } returns Response.success(
+            TagsResponse(results = listOf(PaperlessLabel(1, "a"), PaperlessLabel(2, "b")), next = null)
+        )
+
+        val result = repository.fetchLabels("http://test.local", "tok")
+
+        assertTrue(result.isSuccess)
+        assertEquals(listOf(PaperlessLabel(1, "a"), PaperlessLabel(2, "b")), result.getOrNull())
+        coVerify(exactly = 1) { api.getTags(any(), any(), any()) }
+    }
+
+    @Test
+    fun `fetchLabels accumulates results across multiple pages`() = runTest {
+        coEvery { api.getTags(any(), any(), 1) } returns Response.success(
+            TagsResponse(results = listOf(PaperlessLabel(1, "a")), next = "http://test.local/api/tags/?page=2")
+        )
+        coEvery { api.getTags(any(), any(), 2) } returns Response.success(
+            TagsResponse(results = listOf(PaperlessLabel(2, "b")), next = null)
+        )
+
+        val result = repository.fetchLabels("http://test.local", "tok")
+
+        assertTrue(result.isSuccess)
+        assertEquals(listOf(PaperlessLabel(1, "a"), PaperlessLabel(2, "b")), result.getOrNull())
+        coVerify(exactly = 1) { api.getTags(any(), any(), 1) }
+        coVerify(exactly = 1) { api.getTags(any(), any(), 2) }
+    }
+
+    @Test
+    fun `fetchLabels returns failure on HTTP error on second page`() = runTest {
+        coEvery { api.getTags(any(), any(), 1) } returns Response.success(
+            TagsResponse(results = listOf(PaperlessLabel(1, "a")), next = "http://test.local/api/tags/?page=2")
+        )
+        coEvery { api.getTags(any(), any(), 2) } returns Response.error(500, "Server error".toResponseBody())
+
+        val result = repository.fetchLabels("http://test.local", "tok")
+
+        assertTrue(result.isFailure)
+        assertTrue(result.exceptionOrNull()!!.message!!.contains("500"))
+    }
+
     // ── uploadPdf ───────────────────────────────────────────────────────────────
 
     @Test

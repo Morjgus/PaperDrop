@@ -24,7 +24,8 @@ interface PaperlessApi {
     @GET("api/tags/")
     suspend fun getTags(
         @Header("Authorization") token: String,
-        @Query("page_size") pageSize: Int = 250
+        @Query("page_size") pageSize: Int = 250,
+        @Query("page") page: Int = 1
     ): Response<TagsResponse>
 
     @GET("api/")
@@ -41,7 +42,8 @@ data class TaskStatusResponse(
 )
 
 data class TagsResponse(
-    @SerializedName("results") val results: List<PaperlessLabel>
+    @SerializedName("results") val results: List<PaperlessLabel>,
+    @SerializedName("next")    val next: String?
 )
 
 data class PaperlessLabel(
