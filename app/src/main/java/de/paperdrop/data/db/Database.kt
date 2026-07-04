@@ -1,6 +1,8 @@
 package de.paperdrop.data.db
 
 import androidx.room.*
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 import kotlinx.coroutines.flow.Flow
 
 // ── Entity ────────────────────────────────────────────────────────────────────
@@ -14,7 +16,8 @@ data class UploadEntity(
     val timestamp: Long,
     val errorMessage: String? = null,
     val documentId: Int?      = null,
-    val isDuplicate: Boolean  = false
+    val isDuplicate: Boolean  = false,
+    val taskId: String?       = null
 )
 
 enum class UploadStatus { RUNNING, SUCCESS, FAILED }
@@ -33,6 +36,12 @@ interface UploadDao {
     @Query("UPDATE uploads SET status = :status, documentId = :documentId, isDuplicate = :isDuplicate WHERE id = :id")
     suspend fun updateStatus(id: Long, status: UploadStatus, documentId: Int, isDuplicate: Boolean = false)
 
+    @Query("UPDATE uploads SET taskId = :taskId WHERE id = :id")
+    suspend fun updateTaskId(id: Long, taskId: String)
+
+    @Query("SELECT * FROM uploads WHERE fileUri = :uri ORDER BY id DESC LIMIT 1")
+    suspend fun getByUri(uri: String): UploadEntity?
+
     @Query("SELECT fileUri FROM uploads")
     suspend fun getAllUris(): List<String>
 
@@ -48,10 +57,16 @@ interface UploadDao {
 
 // ── Database ──────────────────────────────────────────────────────────────────
 
-@Database(entities = [UploadEntity::class], version = 2, exportSchema = false)
+@Database(entities = [UploadEntity::class], version = 3, exportSchema = false)
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun uploadDao(): UploadDao
+}
+
+val MIGRATION_2_3 = object : Migration(2, 3) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE uploads ADD COLUMN taskId TEXT")
+    }
 }
 
 class Converters {

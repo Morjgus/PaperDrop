@@ -9,6 +9,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import de.paperdrop.data.db.AppDatabase
+import de.paperdrop.data.db.MIGRATION_2_3
 import de.paperdrop.data.db.UploadDao
 import javax.inject.Singleton
 
@@ -20,6 +21,7 @@ object AppModule {
     @Singleton
     fun provideDatabase(@ApplicationContext context: Context): AppDatabase =
         Room.databaseBuilder(context, AppDatabase::class.java, "paperdrop.db")
+            .addMigrations(MIGRATION_2_3)
             .fallbackToDestructiveMigration()
             .build()
 

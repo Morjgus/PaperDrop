@@ -48,7 +48,10 @@ class UploadWorker @AssistedInject constructor(
         val fileName  = inputData.getString(KEY_FILE_NAME) ?: "document.pdf"
         val fileUri   = Uri.parse(uriString)
 
-        val entityId = uploadDao.insert(
+        // Reuse the row from a previous attempt (if any) instead of inserting a new one,
+        // so retries don't pollute history with duplicate rows for the same file.
+        val existing = uploadDao.getByUri(uriString)
+        val entityId = existing?.id ?: uploadDao.insert(
             UploadEntity(
                 fileName  = fileName,
                 fileUri   = uriString,
@@ -56,14 +59,22 @@ class UploadWorker @AssistedInject constructor(
                 timestamp = System.currentTimeMillis()
             )
         )
-
-        val uploadResult = paperlessRepository.uploadPdf(fileUri)
-        if (uploadResult is UploadResult.Error) {
-            uploadDao.updateStatus(entityId, UploadStatus.FAILED, uploadResult.message)
-            return if (runAttemptCount < 3) Result.retry() else Result.failure()
+        if (existing != null) {
+            uploadDao.updateStatus(entityId, UploadStatus.RUNNING)
         }
 
-        val taskId      = (uploadResult as UploadResult.Success).taskId
+        // If a previous attempt already got Paperless to accept the file (taskId persisted),
+        // skip uploadPdf entirely and resume polling – otherwise we'd re-upload the document.
+        val taskId: String = existing?.taskId ?: run {
+            val uploadResult = paperlessRepository.uploadPdf(fileUri)
+            if (uploadResult is UploadResult.Error) {
+                return failOrRetry(entityId, uploadResult.message)
+            }
+            val newTaskId = (uploadResult as UploadResult.Success).taskId
+            uploadDao.updateTaskId(entityId, newTaskId)
+            newTaskId
+        }
+
         val finalResult = paperlessRepository.waitForTask(taskId)
 
         return when (finalResult) {
@@ -80,12 +91,19 @@ class UploadWorker @AssistedInject constructor(
                 handleFileAfterUpload(fileUri)
                 Result.success()
             }
-            is UploadResult.Error -> {
-                uploadDao.updateStatus(entityId, UploadStatus.FAILED, finalResult.message)
-                if (runAttemptCount < 3) Result.retry() else Result.failure()
-            }
+            is UploadResult.Error -> failOrRetry(entityId, finalResult.message)
             else -> Result.failure()
         }
+    }
+
+    /**
+     * While retries remain, leave the row RUNNING (WorkManager will re-run doWork).
+     * Only mark FAILED once we give up for good and return Result.failure().
+     */
+    private suspend fun failOrRetry(entityId: Long, message: String): Result {
+        if (runAttemptCount < 3) return Result.retry()
+        uploadDao.updateStatus(entityId, UploadStatus.FAILED, message)
+        return Result.failure()
     }
 
     private suspend fun handleFileAfterUpload(fileUri: Uri) {

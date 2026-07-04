@@ -222,4 +222,27 @@ class PaperlessRepositoryTest {
         val result = repository.waitForTask("t", maxAttempts = 1)
         assertTrue(result is UploadResult.Error)
     }
+
+    @Test
+    fun `waitForTask keeps polling on empty task list and completes once task becomes visible`() = runTest {
+        coEvery { settingsRepository.getSnapshot() } returns defaultSettings
+        coEvery { api.getTaskStatus(any(), any()) } returnsMany listOf(
+            Response.success(emptyList()),
+            Response.success(emptyList()),
+            Response.success(listOf(TaskStatusResponse("t", "SUCCESS", "7", "file.pdf")))
+        )
+        val result = repository.waitForTask("t", maxAttempts = 3)
+        assertEquals(UploadResult.Completed(7, "file.pdf"), result)
+    }
+
+    @Test
+    fun `waitForTask returns timeout error only after exhausting attempts on empty task list`() = runTest {
+        coEvery { settingsRepository.getSnapshot() } returns defaultSettings
+        coEvery { api.getTaskStatus(any(), any()) } returns Response.success(emptyList())
+
+        val result = repository.waitForTask("t", maxAttempts = 3)
+
+        assertTrue(result is UploadResult.Error)
+        coVerify(exactly = 3) { api.getTaskStatus(any(), any()) }
+    }
 }

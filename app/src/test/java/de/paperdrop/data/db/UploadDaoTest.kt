@@ -61,6 +61,37 @@ class UploadDaoTest {
     }
 
     @Test
+    fun `getByUri returns null when no row exists for the uri`() = runBlocking {
+        assertNull(dao.getByUri("content://missing"))
+    }
+
+    @Test
+    fun `getByUri returns the latest row for a repeatedly-inserted uri`() = runBlocking {
+        dao.insert(entity(fileUri = "content://same", timestamp = 1000L))
+        val secondId = dao.insert(entity(fileUri = "content://same", timestamp = 2000L))
+
+        val result = dao.getByUri("content://same")
+        assertEquals(secondId, result?.id)
+    }
+
+    @Test
+    fun `new rows default taskId to null`() = runBlocking {
+        dao.insert(entity())
+
+        val uploads = dao.getAllUploads().first()
+        assertNull(uploads[0].taskId)
+    }
+
+    @Test
+    fun `updateTaskId persists the task id on the row`() = runBlocking {
+        val id = dao.insert(entity())
+        dao.updateTaskId(id, "task-123")
+
+        val result = dao.getByUri("content://test/1")
+        assertEquals("task-123", result?.taskId)
+    }
+
+    @Test
     fun `updateStatus with error updates status and errorMessage`() = runBlocking {
         val id = dao.insert(entity())
         dao.updateStatus(id, UploadStatus.FAILED, "network error")

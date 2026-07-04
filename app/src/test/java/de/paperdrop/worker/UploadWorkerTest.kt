@@ -50,6 +50,9 @@ class UploadWorkerTest {
     fun setUp() {
         context = ApplicationProvider.getApplicationContext()
         mockkStatic(DocumentFile::class)
+        // MockK's relaxed mode fabricates a non-null UploadEntity for unstubbed nullable
+        // return types instead of null, so the "no previous attempt" case must be explicit.
+        coEvery { uploadDao.getByUri(any()) } returns null
     }
 
     @After
@@ -131,6 +134,52 @@ class UploadWorkerTest {
     }
 
     @Test
+    fun `doWork does not mark FAILED when retrying after upload failure`() = runBlocking {
+        coEvery { uploadDao.insert(any()) } returns 1L
+        coEvery { paperlessRepository.uploadPdf(any()) } returns UploadResult.Error("fail")
+
+        buildWorker(runAttemptCount = 0).doWork()
+
+        coVerify(exactly = 0) { uploadDao.updateStatus(any(), UploadStatus.FAILED, any<String>()) }
+    }
+
+    @Test
+    fun `doWork persists taskId before polling`() = runBlocking {
+        coEvery { uploadDao.insert(any()) } returns 3L
+        coEvery { paperlessRepository.uploadPdf(any()) } returns UploadResult.Success("task-xyz", "f.pdf")
+        coEvery { paperlessRepository.waitForTask("task-xyz") } returns UploadResult.Completed(1, "f.pdf")
+        coEvery { settingsRepository.getSnapshot() } returns defaultSettings
+
+        buildWorker().doWork()
+
+        coVerify { uploadDao.updateTaskId(3L, "task-xyz") }
+    }
+
+    @Test
+    fun `doWork reuses existing row and resumes polling via persisted taskId without re-uploading`() = runBlocking {
+        val existing = UploadEntity(
+            id = 7L,
+            fileName = "file.pdf",
+            fileUri = "content://test/file.pdf",
+            status = UploadStatus.RUNNING,
+            timestamp = 500L,
+            errorMessage = null,
+            taskId = "task-existing"
+        )
+        coEvery { uploadDao.getByUri("content://test/file.pdf") } returns existing
+        coEvery { paperlessRepository.waitForTask("task-existing") } returns UploadResult.Completed(9, "file.pdf")
+        coEvery { settingsRepository.getSnapshot() } returns defaultSettings
+
+        val result = buildWorker(runAttemptCount = 1).doWork()
+
+        assertEquals(Result.success(), result)
+        coVerify(exactly = 0) { paperlessRepository.uploadPdf(any()) }
+        coVerify(exactly = 0) { uploadDao.insert(any()) }
+        coVerify { uploadDao.updateStatus(7L, UploadStatus.RUNNING) }
+        coVerify { uploadDao.updateStatus(7L, UploadStatus.SUCCESS, 9, false) }
+    }
+
+    @Test
     fun `doWork calls waitForTask with the correct taskId`() = runBlocking {
         coEvery { uploadDao.insert(any()) } returns 1L
         coEvery { paperlessRepository.uploadPdf(any()) } returns UploadResult.Success("task-abc", "file.pdf")
@@ -169,6 +218,17 @@ class UploadWorkerTest {
         coEvery { paperlessRepository.waitForTask(any()) } returns UploadResult.Error("timeout")
 
         assertEquals(Result.failure(), buildWorker(runAttemptCount = 3).doWork())
+    }
+
+    @Test
+    fun `doWork does not mark FAILED when retrying after waitForTask failure`() = runBlocking {
+        coEvery { uploadDao.insert(any()) } returns 1L
+        coEvery { paperlessRepository.uploadPdf(any()) } returns UploadResult.Success("t", "f.pdf")
+        coEvery { paperlessRepository.waitForTask(any()) } returns UploadResult.Error("timeout")
+
+        buildWorker(runAttemptCount = 1).doWork()
+
+        coVerify(exactly = 0) { uploadDao.updateStatus(any(), UploadStatus.FAILED, any<String>()) }
     }
 
     @Test

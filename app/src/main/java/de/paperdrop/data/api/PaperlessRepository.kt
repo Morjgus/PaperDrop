@@ -82,7 +82,7 @@ class PaperlessRepository @Inject constructor(
             if (!response.isSuccessful) return UploadResult.Error(context.getString(R.string.error_task_query_failed))
 
             val task = response.body()?.firstOrNull()
-                ?: return UploadResult.Error(context.getString(R.string.error_task_not_found))
+                ?: return@repeat // task not visible in Paperless yet – keep polling
 
             when (task.status) {
                 "SUCCESS" -> {
